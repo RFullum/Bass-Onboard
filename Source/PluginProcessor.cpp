@@ -35,28 +35,40 @@ BassOnboardAudioProcessor::BassOnboardAudioProcessor()
 parameters(*this, nullptr, "ParameterTree", {
     // Gain params
     std::make_unique<AudioParameterFloat>("inGain", "Input Gain",
-                                          NormalisableRange<float>(0.0f, 2.0f, 0.01f, 2.0f, true), 1.0f, "Input Gain" ),
+                                          NormalisableRange<float>(-100.0f, 12.0f, 0.01f, 2.0f, true), 0.0f, "dB" ),
     std::make_unique<AudioParameterFloat>("outGain", "Output Gain",
-                                          NormalisableRange<float>(0.0f, 2.0f, 0.01f, 2.0f, true), 1.0f, "Output Gain" ),
+                                          NormalisableRange<float>(-100.0f, 12.0f, 0.01f, 2.0f, true), 0.0f, "dB" ),
     // Noise Gate Params
     std::make_unique<AudioParameterFloat>("ngThresh", "Noise Gate Threshold",
-                                          NormalisableRange<float>(-100.0f, 12.0f, 0.01f, 2.0f, false), -96.0f, "Noise Gate Threshold" ),
+                                          NormalisableRange<float>(-100.0f, 12.0f, 0.01f, 2.0f, false), -96.0f, "dB" ),
     std::make_unique<AudioParameterFloat>("ngRatio", "Noise Gate Ratio",
-                                          NormalisableRange<float>(1.0f, 25.0f, 0.1f, 0.25f, false), 25.0f, "Noise Gate Ratio" ),
+                                          NormalisableRange<float>(1.0f, 25.0f, 0.1f, 0.25f, false), 25.0f, "1:x" ),
     std::make_unique<AudioParameterFloat>("ngAttack", "Noise Gate Attack",
-                                          NormalisableRange<float>(0.1f, 10.0f, 0.1f, 1.0f, false), 0.5f, "Noise Gate Attack" ),
+                                          NormalisableRange<float>(0.1f, 10.0f, 0.1f, 1.0f, false), 0.5f, "ms" ),
     std::make_unique<AudioParameterFloat>("ngRelease", "Noise Gate Release",
-                                          NormalisableRange<float>(0.1f, 10.0f, 0.1f, 1.0f, false), 2.0f, "Noise Gate Release" ),
+                                          NormalisableRange<float>(0.1f, 10.0f, 0.1f, 1.0f, false), 2.0f, "ms" ),
+    std::make_unique<AudioParameterChoice>("ngOnOff", "Noise Gate On/Off", StringArray( {"Off", "On"} ), 0 ),
     
     // Compressor Params
     std::make_unique<AudioParameterFloat>("compThresh", "Compressor Threshold",
-                                          NormalisableRange<float>(-100.0f, 12.0f, 0.01f, 2.0f, false), 0.0f, "Compressor Threshold" ),
+                                          NormalisableRange<float>(-100.0f, 12.0f, 0.01f, 2.0f, false), 0.0f, "dB" ),
     std::make_unique<AudioParameterFloat>("compRatio", "Compressor Ratio",
-                                          NormalisableRange<float>(1.0f, 25.0f, 0.1f, 0.25f, false), 1.0f, "Compressor Ratio" ),
+                                          NormalisableRange<float>(1.0f, 25.0f, 0.1f, 0.25f, false), 1.0f, "x:1" ),
     std::make_unique<AudioParameterFloat>("compAttack", "Compressor Attack",
-                                          NormalisableRange<float>(0.1f, 10.0f, 0.1f, 1.0f, false), 0.5f, "Compressor Attack" ),
+                                          NormalisableRange<float>(0.1f, 10.0f, 0.1f, 1.0f, false), 0.5f, "ms" ),
     std::make_unique<AudioParameterFloat>("compRelease", "Compressor Release",
-                                          NormalisableRange<float>(0.1f, 10.0f, 0.1f, 1.0f, false), 2.0f, "Compressor Release" )
+                                          NormalisableRange<float>(0.1f, 10.0f, 0.1f, 1.0f, false), 2.0f, "ms" ),
+    std::make_unique<AudioParameterChoice>("compOnOff", "Compressor On/Off", StringArray( {"Off", "On"} ), 0 ),
+    
+    // Distortion Params
+    std::make_unique<AudioParameterFloat>("wsAmt", "Waveshape Amount",
+                                          NormalisableRange<float>(1.0f, 200.0f, 0.01f, 1.0f, false), 1.0f, "" ),
+    std::make_unique<AudioParameterFloat>("wsDryWet", "Waveshape Dry/Wet",
+                                          NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
+    std::make_unique<AudioParameterFloat>("foldbackAmt", "Foldback Amount",
+                                          NormalisableRange<float>(1.0f, 200.0f, 0.01f, 0.325f, false), 1.0f, "" ),
+    std::make_unique<AudioParameterFloat>("foldbackDryWet", "Foldback Dry/Wet",
+                                          NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" )
     
 })
 
@@ -71,12 +83,20 @@ parameters(*this, nullptr, "ParameterTree", {
     ngRatioParam   = parameters.getRawParameterValue ( "ngRatio"   );
     ngAttackParam  = parameters.getRawParameterValue ( "ngAttack"  );
     ngReleaseParam = parameters.getRawParameterValue ( "ngRelease" );
+    ngOnOffParam   = parameters.getRawParameterValue ( "ngOnOff"   );
     
     // Compressor Params
     compThreshParam  = parameters.getRawParameterValue ( "compThresh"  );
     compRatioParam   = parameters.getRawParameterValue ( "compRatio"   );
     compAttackParam  = parameters.getRawParameterValue ( "compAttack"  );
     compReleaseParam = parameters.getRawParameterValue ( "compRelease" );
+    compOnOffParam   = parameters.getRawParameterValue ( "compOnOff"   );
+    
+    // Distortion Params
+    waveShapeAmountParam = parameters.getRawParameterValue ( "wsAmt"          );
+    waveShapeDryWetParam = parameters.getRawParameterValue ( "wsDryWet"       );
+    foldbackAmountParam  = parameters.getRawParameterValue ( "foldbackAmt"    );
+    foldbackDryWetParam  = parameters.getRawParameterValue ( "foldbackDryWet" );
 }
 
 BassOnboardAudioProcessor::~BassOnboardAudioProcessor()
@@ -148,14 +168,21 @@ void BassOnboardAudioProcessor::changeProgramName (int index, const juce::String
 //==============================================================================
 void BassOnboardAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    // Process Spec
     dsp::ProcessSpec spec;
     
     spec.maximumBlockSize = samplesPerBlock;
     spec.sampleRate       = sampleRate;
     
-    inGain.prepare                ( spec );
-    inGain.reset                  ();
+    
+    // DSP Widgets
+    inGain.prepare                ( spec   );
+    inGain.reset                  (        );
     inGain.setRampDurationSeconds ( 0.001f );
+    
+    outGain.prepare                ( spec   );
+    outGain.reset                  (        );
+    outGain.setRampDurationSeconds ( 0.001f );
     
     noiseGate.prepare ( spec );
     noiseGate.reset   ();
@@ -163,8 +190,7 @@ void BassOnboardAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     comp.prepare ( spec );
     comp.reset   ();
     
-    waveShaper.prepare ( spec );
-    waveShaper.reset   ();
+    
 }
 
 void BassOnboardAudioProcessor::releaseResources()
@@ -201,12 +227,13 @@ bool BassOnboardAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
 
 void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
-    juce::ScopedNoDenormals noDenormals;
+    ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
+    
     
     // Create the AudioBlock for DSP widgets
     dsp::AudioBlock<float> sampleBlock ( buffer );
@@ -216,18 +243,45 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     inGain.process         ( dsp::ProcessContextReplacing<float>(sampleBlock) );
     
     // Apply Noise Gate
-    noiseGate.setThreshold ( *ngThreshParam  );
-    noiseGate.setRatio     ( *ngRatioParam   );
-    noiseGate.setAttack    ( *ngAttackParam  );
-    noiseGate.setRelease   ( *ngReleaseParam );
-    noiseGate.process      ( dsp::ProcessContextReplacing<float>(sampleBlock) );
+    if (*ngOnOffParam == 1.0f)
+    {
+        noiseGate.setThreshold ( *ngThreshParam  );
+        noiseGate.setRatio     ( *ngRatioParam   );
+        noiseGate.setAttack    ( *ngAttackParam  );
+        noiseGate.setRelease   ( *ngReleaseParam );
+        noiseGate.process      ( dsp::ProcessContextReplacing<float>(sampleBlock) );
+    }
+    
+    
     
     // Apply Compressor
-    comp.setThreshold ( *compThreshParam );
-    comp.setRatio     ( *compRatioParam  );
-    comp.setAttack    ( *compAttackParam );
-    comp.setRatio     ( *compRatioParam  );
-    comp.process      ( dsp::ProcessContextReplacing<float>(sampleBlock) );
+    if (*compOnOffParam == 1.0f)
+    {
+        comp.setThreshold ( *compThreshParam );
+        comp.setRatio     ( *compRatioParam  );
+        comp.setAttack    ( *compAttackParam );
+        comp.setRatio     ( *compRatioParam  );
+        comp.process      ( dsp::ProcessContextReplacing<float>(sampleBlock) );
+    }
+    
+    int bufferChannels = buffer.getNumChannels();
+    int bufferSamples  = buffer.getNumSamples();
+    
+    // Apply Waveshaper
+    //AudioBuffer<float> waveShaperBuffer(2, bufferSamples);
+    
+    // Automatically "off" when wet = 0.0f
+    //if (*waveShapeDryWetParam > 0.0f)
+    AudioBuffer<float> waveShaperBuffer = waveShaper.processWaveshape ( buffer,*waveShapeAmountParam, *waveShapeDryWetParam );
+    
+    
+    // Apply Foldback
+    //AudioBuffer<float> foldbackBuffer(2, bufferSamples);
+    
+    // Automatically "off" when wet = 0.0f
+    //if (*foldbackDryWetParam > 0.0f && *foldbackAmountParam > 0.0f)
+    //    foldbackBuffer = foldback.processFoldback ( waveShaperBuffer, *foldbackAmountParam, *foldbackDryWetParam );
+    AudioBuffer<float> foldbackBuffer = foldback.processFoldback ( waveShaperBuffer, *foldbackAmountParam, *foldbackDryWetParam );
 
     // Audio input to buffer
     int numSamples     = buffer.getNumSamples();
@@ -241,10 +295,21 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
         //float inLeftSample  = leftChannel[i]  * *inGainDBParam;
         //float inRightSample = rightChannel[i] * *inGainDBParam;
         
-        // Ouput Gain
-        //leftChannel[i]  = inLeftSample  * *outGainDBParam;
-        //rightChannel[i] = inRightSample * *outGainDBParam;
+        for (int channel = 0; channel < waveShaperBuffer.getNumChannels(); channel++)
+        {
+            leftChannel[i]  = waveShaperBuffer.getSample ( channel, i );
+            rightChannel[i] = waveShaperBuffer.getSample ( channel, i );
+        }
+        
+        for (int channel = 0; channel < foldbackBuffer.getNumChannels(); channel++)
+        {
+            leftChannel[i]  = foldbackBuffer.getSample ( channel, i );
+            rightChannel[i] = foldbackBuffer.getSample ( channel, i );
+        }
     }
+    
+    outGain.setGainDecibels ( *outGainDBParam );
+    outGain.process         ( dsp::ProcessContextReplacing<float>(sampleBlock) );
 }
 
 //==============================================================================

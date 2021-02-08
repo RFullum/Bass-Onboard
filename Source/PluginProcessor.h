@@ -9,6 +9,9 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "DryWet.h"
+#include "FoldbackDistortion.h"
+#include "WaveShaper.h"
 
 //==============================================================================
 /**
@@ -71,23 +74,30 @@ private:
     std::atomic<float>* ngRatioParam;
     std::atomic<float>* ngAttackParam;
     std::atomic<float>* ngReleaseParam;
+    std::atomic<float>* ngOnOffParam;
     
     // Compressor Params
     std::atomic<float>* compThreshParam;
     std::atomic<float>* compRatioParam;
     std::atomic<float>* compAttackParam;
     std::atomic<float>* compReleaseParam;
+    std::atomic<float>* compOnOffParam;
     
-    
-    // DSP Processors
-    
+    // Distortion Params
+    std::atomic<float>* waveShapeAmountParam;
+    std::atomic<float>* waveShapeDryWetParam;
+    std::atomic<float>* foldbackAmountParam;
+    std::atomic<float>* foldbackDryWetParam;
     
     // DSP Widgets
     dsp::Gain<float> inGain;
+    dsp::Gain<float> outGain;
     dsp::NoiseGate<float> noiseGate;
     dsp::Compressor<float> comp;
-    dsp::WaveShaper<float> waveShaper;
     
+    // Non JUCE Processing Classes
+    WaveShaper waveShaper;
+    FoldbackDistortion foldback;
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BassOnboardAudioProcessor)
