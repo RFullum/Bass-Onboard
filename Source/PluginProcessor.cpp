@@ -65,10 +65,28 @@ parameters(*this, nullptr, "ParameterTree", {
                                           NormalisableRange<float>(1.0f, 200.0f, 0.01f, 1.0f, false), 1.0f, "" ),
     std::make_unique<AudioParameterFloat>("wsDryWet", "Waveshape Dry/Wet",
                                           NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
+    std::make_unique<AudioParameterChoice>("wsOnOff", "Waveshape On/Off", StringArray( {"Off", "On"} ), 0 ),
+    
     std::make_unique<AudioParameterFloat>("foldbackAmt", "Foldback Amount",
                                           NormalisableRange<float>(1.0f, 200.0f, 0.01f, 0.325f, false), 1.0f, "" ),
     std::make_unique<AudioParameterFloat>("foldbackDryWet", "Foldback Dry/Wet",
-                                          NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" )
+                                          NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
+    std::make_unique<AudioParameterChoice>("foldbackOnOff", "Foldback On/Off", StringArray( {"Off", "On"} ), 0 ),
+    
+    std::make_unique<AudioParameterFloat>("bitcrushAmt", "Bitcrush Amount",
+                                          NormalisableRange<float>(0.0f, 1.0f, 0.01f, 0.325f, false), 1.0f, "" ),
+    std::make_unique<AudioParameterFloat>("bitcrushDryWet", "Bitcrush Dry/Wet",
+                                          NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
+    std::make_unique<AudioParameterChoice>("bitcrushOnOf", "Bitcrush On/Off", StringArray( {"Off", "On"} ), 0 ),
+    
+    std::make_unique<AudioParameterFloat>("hardSqDryWet", "HardSquare Dry/Wet",
+                                          NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
+    std::make_unique<AudioParameterChoice>("hardSqOnOff", "HardSquare On/Off", StringArray( {"Off", "On"} ), 0 ),
+    
+    // Spatial Params
+    std::make_unique<AudioParameterFloat>("haasWidth", "Width Amount",
+                                          NormalisableRange<float>(-1.0f, 1.0f, 0.001f, 1.0f, false), 0.0f, "" ),
+    std::make_unique<AudioParameterChoice>("haasOnOff", "Width On/Off", StringArray( {"Off", "On"} ), 0 )
     
 })
 
@@ -93,10 +111,24 @@ parameters(*this, nullptr, "ParameterTree", {
     compOnOffParam   = parameters.getRawParameterValue ( "compOnOff"   );
     
     // Distortion Params
-    waveShapeAmountParam = parameters.getRawParameterValue ( "wsAmt"          );
-    waveShapeDryWetParam = parameters.getRawParameterValue ( "wsDryWet"       );
-    foldbackAmountParam  = parameters.getRawParameterValue ( "foldbackAmt"    );
-    foldbackDryWetParam  = parameters.getRawParameterValue ( "foldbackDryWet" );
+    waveShapeAmountParam = parameters.getRawParameterValue ( "wsAmt"    );
+    waveShapeDryWetParam = parameters.getRawParameterValue ( "wsDryWet" );
+    waveShapeOnOffParam  = parameters.getRawParameterValue ( "wsOnOff"  );
+    
+    foldbackAmountParam = parameters.getRawParameterValue ( "foldbackAmt"    );
+    foldbackDryWetParam = parameters.getRawParameterValue ( "foldbackDryWet" );
+    foldbackOnOffParam  = parameters.getRawParameterValue ( "foldbackOnOff"  );
+    
+    bitcrushAmtParam    = parameters.getRawParameterValue ( "bitcrushAmt"    );
+    bitcrushDryWetParam = parameters.getRawParameterValue ( "bitcrushDryWet" );
+    bitcrushOnOffParam  = parameters.getRawParameterValue ( "bitcrushOnOf"   );
+    
+    hardSquareDryWetParam = parameters.getRawParameterValue ( "hardSqDryWet" );
+    hardSquareOnOffParam  = parameters.getRawParameterValue ( "hardSqOnOff"  );
+    
+    // Spatial Params
+    haasWidthParam = parameters.getRawParameterValue ( "haasWidth" );
+    haasOnOffParam = parameters.getRawParameterValue ( "haasOnOff" );
 }
 
 BassOnboardAudioProcessor::~BassOnboardAudioProcessor()
@@ -190,7 +222,9 @@ void BassOnboardAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     comp.prepare ( spec );
     comp.reset   ();
     
-    
+    // Non Juce Processing
+    bitCrusher.prepare ( sampleRate );
+    haas.setSampleRate ( sampleRate );
 }
 
 void BassOnboardAudioProcessor::releaseResources()
@@ -243,7 +277,7 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     inGain.process         ( dsp::ProcessContextReplacing<float>(sampleBlock) );
     
     // Apply Noise Gate
-    if (*ngOnOffParam == 1.0f)
+    if (*ngOnOffParam)
     {
         noiseGate.setThreshold ( *ngThreshParam  );
         noiseGate.setRatio     ( *ngRatioParam   );
@@ -255,7 +289,7 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     
     
     // Apply Compressor
-    if (*compOnOffParam == 1.0f)
+    if (*compOnOffParam)
     {
         comp.setThreshold ( *compThreshParam );
         comp.setRatio     ( *compRatioParam  );
@@ -263,48 +297,82 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
         comp.setRatio     ( *compRatioParam  );
         comp.process      ( dsp::ProcessContextReplacing<float>(sampleBlock) );
     }
+    else
     
     int bufferChannels = buffer.getNumChannels();
     int bufferSamples  = buffer.getNumSamples();
     
-    // Apply Waveshaper
-    //AudioBuffer<float> waveShaperBuffer(2, bufferSamples);
     
-    // Automatically "off" when wet = 0.0f
-    //if (*waveShapeDryWetParam > 0.0f)
-    AudioBuffer<float> waveShaperBuffer = waveShaper.processWaveshape ( buffer,*waveShapeAmountParam, *waveShapeDryWetParam );
+    // Apply Distortions
+    /*
+    AudioBuffer<float> waveShaperBuffer = ( *waveShapeOnOffParam )
+                                            ? waveShaper.processWaveshape( buffer, *waveShapeAmountParam, *waveShapeDryWetParam )
+                                            : buffer;
+    AudioBuffer<float> foldbackBuffer   = ( *foldbackOnOffParam  )
+                                            ? foldback.processFoldback( waveShaperBuffer, *foldbackAmountParam, *foldbackDryWetParam )
+                                            : waveShaperBuffer;
+    AudioBuffer<float> bitcrushBuffer   = ( *bitcrushOnOffParam  )
+                                            ? bitCrusher.process( foldbackBuffer, *bitcrushAmtParam, *bitcrushDryWetParam )
+                                            : foldbackBuffer;
+    AudioBuffer<float> hardSquareBuffer = ( *hardSquareOnOffParam )
+                                            ? hardSquare.process( bitcrushBuffer, *hardSquareDryWetParam )
+                                            : bitcrushBuffer;
+    AudioBuffer<float> haasBuffer       = ( *haasOnOffParam )
+                                            ? haas.process( hardSquareBuffer, *haasWidthParam )
+                                            : hardSquareBuffer;
     
+    AudioBuffer<float> effectsBuffer = waveShaperBuffer;
+    */
+    AudioBuffer<float> effectsBuffer(buffer); //= buffer;
     
-    // Apply Foldback
-    //AudioBuffer<float> foldbackBuffer(2, bufferSamples);
+    /*
+    for (int ch = 0; ch < buffer.getNumChannels(); ch++)
+    {
+        for (int smp = 0; smp < buffer.getNumSamples(); smp++)
+        {
+            effectsBuffer.setSample( ch, smp, buffer.getSample( ch, smp) );
+        }
+    }
+    */
     
-    // Automatically "off" when wet = 0.0f
-    //if (*foldbackDryWetParam > 0.0f && *foldbackAmountParam > 0.0f)
-    //    foldbackBuffer = foldback.processFoldback ( waveShaperBuffer, *foldbackAmountParam, *foldbackDryWetParam );
-    AudioBuffer<float> foldbackBuffer = foldback.processFoldback ( waveShaperBuffer, *foldbackAmountParam, *foldbackDryWetParam );
+    /*
+    effectsBuffer = ( *waveShapeOnOffParam )  ? waveShaper.processWaveshape( effectsBuffer, *waveShapeAmountParam, *waveShapeDryWetParam )
+                                              : effectsBuffer;
+    effectsBuffer = ( *foldbackOnOffParam )   ? foldback.processFoldback( effectsBuffer, *foldbackAmountParam, *foldbackDryWetParam )
+                                              : effectsBuffer;
+    effectsBuffer = ( *bitcrushOnOffParam )   ? bitCrusher.process( effectsBuffer, *bitcrushAmtParam, *bitcrushDryWetParam )
+                                              : effectsBuffer;
+    effectsBuffer = ( *hardSquareOnOffParam ) ? hardSquare.process( effectsBuffer, *hardSquareDryWetParam )
+                                              : effectsBuffer;
+    effectsBuffer = ( *haasOnOffParam )       ? haas.process( effectsBuffer, *haasWidthParam )
+                                              : effectsBuffer;
+    */
+    
+    if (*waveShapeOnOffParam == 1.0f)
+        effectsBuffer = waveShaper.processWaveshape( effectsBuffer, *waveShapeAmountParam, *waveShapeDryWetParam );
+    
+    if (*foldbackOnOffParam == 1.0f)
+        effectsBuffer = foldback.processFoldback( effectsBuffer, *foldbackAmountParam, *foldbackDryWetParam );
+    
+    if (*bitcrushOnOffParam == 1.0f)
+        effectsBuffer = bitCrusher.process( effectsBuffer, *bitcrushAmtParam, *bitcrushDryWetParam );
+    
+    if (*haasOnOffParam == 1.0f)
+        effectsBuffer = haas.process( effectsBuffer, *haasWidthParam );
 
     // Audio input to buffer
     int numSamples     = buffer.getNumSamples();
     auto* leftChannel  = buffer.getWritePointer(0);
     auto* rightChannel = buffer.getWritePointer(1);
     
-    
+    // DSP!
     for (int i=0; i<numSamples; i++)
     {
-        // Apply input gain
-        //float inLeftSample  = leftChannel[i]  * *inGainDBParam;
-        //float inRightSample = rightChannel[i] * *inGainDBParam;
-        
-        for (int channel = 0; channel < waveShaperBuffer.getNumChannels(); channel++)
+        // Apply distortion
+        for (int channel = 0; channel < effectsBuffer.getNumChannels(); channel++)
         {
-            leftChannel[i]  = waveShaperBuffer.getSample ( channel, i );
-            rightChannel[i] = waveShaperBuffer.getSample ( channel, i );
-        }
-        
-        for (int channel = 0; channel < foldbackBuffer.getNumChannels(); channel++)
-        {
-            leftChannel[i]  = foldbackBuffer.getSample ( channel, i );
-            rightChannel[i] = foldbackBuffer.getSample ( channel, i );
+            leftChannel[i]  = effectsBuffer.getSample ( channel, i );
+            rightChannel[i] = effectsBuffer.getSample ( channel, i );
         }
     }
     

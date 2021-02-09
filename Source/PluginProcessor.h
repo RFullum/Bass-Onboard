@@ -10,8 +10,10 @@
 
 #include <JuceHeader.h>
 #include "DryWet.h"
-#include "FoldbackDistortion.h"
 #include "WaveShaper.h"
+#include "FoldbackDistortion.h"
+#include "BitCrusher.h"
+#include "HaasWide.h"
 
 //==============================================================================
 /**
@@ -86,8 +88,22 @@ private:
     // Distortion Params
     std::atomic<float>* waveShapeAmountParam;
     std::atomic<float>* waveShapeDryWetParam;
+    std::atomic<float>* waveShapeOnOffParam;
+    
     std::atomic<float>* foldbackAmountParam;
     std::atomic<float>* foldbackDryWetParam;
+    std::atomic<float>* foldbackOnOffParam;
+    
+    std::atomic<float>* bitcrushAmtParam;
+    std::atomic<float>* bitcrushDryWetParam;
+    std::atomic<float>* bitcrushOnOffParam;
+    
+    std::atomic<float>* hardSquareDryWetParam;
+    std::atomic<float>* hardSquareOnOffParam;
+    
+    // Spatial Params
+    std::atomic<float>* haasWidthParam;
+    std::atomic<float>* haasOnOffParam;
     
     // DSP Widgets
     dsp::Gain<float> inGain;
@@ -96,8 +112,11 @@ private:
     dsp::Compressor<float> comp;
     
     // Non JUCE Processing Classes
-    WaveShaper waveShaper;
+    WaveShaper         waveShaper;
     FoldbackDistortion foldback;
+    BitCrusher         bitCrusher;
+    HardSquare         hardSquare;
+    HaasWide           haas;
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BassOnboardAudioProcessor)

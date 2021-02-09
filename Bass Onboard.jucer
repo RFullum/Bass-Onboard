@@ -11,12 +11,22 @@
             file="Source/PluginProcessor.h"/>
       <FILE id="tZzLK5" name="DryWet.cpp" compile="1" resource="0" file="Source/DryWet.cpp"/>
       <FILE id="QSCaiA" name="DryWet.h" compile="0" resource="0" file="Source/DryWet.h"/>
+      <FILE id="D8wD6X" name="WaveShaper.cpp" compile="1" resource="0" file="Source/WaveShaper.cpp"/>
+      <FILE id="NvqwQB" name="WaveShaper.h" compile="0" resource="0" file="Source/WaveShaper.h"/>
       <FILE id="ag5ggb" name="FoldbackDistortion.cpp" compile="1" resource="0"
             file="Source/FoldbackDistortion.cpp"/>
       <FILE id="luO0cD" name="FoldbackDistortion.h" compile="0" resource="0"
             file="Source/FoldbackDistortion.h"/>
-      <FILE id="D8wD6X" name="WaveShaper.cpp" compile="1" resource="0" file="Source/WaveShaper.cpp"/>
-      <FILE id="NvqwQB" name="WaveShaper.h" compile="0" resource="0" file="Source/WaveShaper.h"/>
+      <FILE id="O1haaI" name="BitCrusher.cpp" compile="1" resource="0" file="Source/BitCrusher.cpp"/>
+      <FILE id="mBGKh5" name="BitCrusher.h" compile="0" resource="0" file="Source/BitCrusher.h"/>
+      <FILE id="Yvmmas" name="Wavetable.cpp" compile="1" resource="0" file="Source/Wavetable.cpp"/>
+      <FILE id="Ro9lqX" name="Wavetable.h" compile="0" resource="0" file="Source/Wavetable.h"/>
+      <FILE id="aHoL9s" name="Oscillators.cpp" compile="1" resource="0" file="Source/Oscillators.cpp"/>
+      <FILE id="qHDfJz" name="Oscillators.h" compile="0" resource="0" file="Source/Oscillators.h"/>
+      <FILE id="taHJEA" name="HaasWide.cpp" compile="1" resource="0" file="Source/HaasWide.cpp"/>
+      <FILE id="x9tXCH" name="HaasWide.h" compile="0" resource="0" file="Source/HaasWide.h"/>
+      <FILE id="nRwHYD" name="DelayLine.cpp" compile="1" resource="0" file="Source/DelayLine.cpp"/>
+      <FILE id="u8weoM" name="DelayLine.h" compile="0" resource="0" file="Source/DelayLine.h"/>
       <FILE id="ldXMg8" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="fFTxtu" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
