@@ -303,54 +303,14 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     int bufferSamples  = buffer.getNumSamples();
     
     
-    // Apply Distortions
-    /*
-    AudioBuffer<float> waveShaperBuffer = ( *waveShapeOnOffParam )
-                                            ? waveShaper.processWaveshape( buffer, *waveShapeAmountParam, *waveShapeDryWetParam )
-                                            : buffer;
-    AudioBuffer<float> foldbackBuffer   = ( *foldbackOnOffParam  )
-                                            ? foldback.processFoldback( waveShaperBuffer, *foldbackAmountParam, *foldbackDryWetParam )
-                                            : waveShaperBuffer;
-    AudioBuffer<float> bitcrushBuffer   = ( *bitcrushOnOffParam  )
-                                            ? bitCrusher.process( foldbackBuffer, *bitcrushAmtParam, *bitcrushDryWetParam )
-                                            : foldbackBuffer;
-    AudioBuffer<float> hardSquareBuffer = ( *hardSquareOnOffParam )
-                                            ? hardSquare.process( bitcrushBuffer, *hardSquareDryWetParam )
-                                            : bitcrushBuffer;
-    AudioBuffer<float> haasBuffer       = ( *haasOnOffParam )
-                                            ? haas.process( hardSquareBuffer, *haasWidthParam )
-                                            : hardSquareBuffer;
+    // Apply Effects
     
-    AudioBuffer<float> effectsBuffer = waveShaperBuffer;
-    */
-    AudioBuffer<float> effectsBuffer; //(buffer); //= buffer;
+    // Create Effects buffer
+    AudioBuffer<float> effectsBuffer;
     effectsBuffer.clear();
     effectsBuffer.makeCopyOf( buffer );
     
-    
-    /*
-    for (int ch = 0; ch < buffer.getNumChannels(); ch++)
-    {
-        for (int smp = 0; smp < buffer.getNumSamples(); smp++)
-        {
-            effectsBuffer.setSample( ch, smp, buffer.getSample( ch, smp) );
-        }
-    }
-    */
-    
-    /*
-    effectsBuffer = ( *waveShapeOnOffParam )  ? waveShaper.processWaveshape( effectsBuffer, *waveShapeAmountParam, *waveShapeDryWetParam )
-                                              : effectsBuffer;
-    effectsBuffer = ( *foldbackOnOffParam )   ? foldback.processFoldback( effectsBuffer, *foldbackAmountParam, *foldbackDryWetParam )
-                                              : effectsBuffer;
-    effectsBuffer = ( *bitcrushOnOffParam )   ? bitCrusher.process( effectsBuffer, *bitcrushAmtParam, *bitcrushDryWetParam )
-                                              : effectsBuffer;
-    effectsBuffer = ( *hardSquareOnOffParam ) ? hardSquare.process( effectsBuffer, *hardSquareDryWetParam )
-                                              : effectsBuffer;
-    effectsBuffer = ( *haasOnOffParam )       ? haas.process( effectsBuffer, *haasWidthParam )
-                                              : effectsBuffer;
-    */
-    
+    // Distortions
     if (*waveShapeOnOffParam == 1.0f)
         effectsBuffer = waveShaper.processWaveshape( effectsBuffer, *waveShapeAmountParam, *waveShapeDryWetParam );
     
@@ -360,6 +320,7 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     if (*bitcrushOnOffParam == 1.0f)
         effectsBuffer = bitCrusher.process( effectsBuffer, *bitcrushAmtParam, *bitcrushDryWetParam );
     
+    // Spatialization
     if (*haasOnOffParam == 1.0f)
         effectsBuffer = haas.process( effectsBuffer, *haasWidthParam );
 
