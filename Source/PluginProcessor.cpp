@@ -323,7 +323,10 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     
     AudioBuffer<float> effectsBuffer = waveShaperBuffer;
     */
-    AudioBuffer<float> effectsBuffer(buffer); //= buffer;
+    AudioBuffer<float> effectsBuffer; //(buffer); //= buffer;
+    effectsBuffer.clear();
+    effectsBuffer.makeCopyOf( buffer );
+    
     
     /*
     for (int ch = 0; ch < buffer.getNumChannels(); ch++)
