@@ -24,7 +24,7 @@ public:
     void prepare(float SR);
     
     /// Takes AudioBuffer and crush amount (0 to 1). Returns bitcrushed AudioBuffer. onOff is 0 or 1 from ParameterChoice
-    AudioBuffer<float> process(AudioBuffer<float>& bufferIn, float crushAmt, float dryWetVal);
+    AudioBuffer<float> process(AudioBuffer<float>& bufferIn, float crushAmt, float dryWetVal, float onOff);
     
 private:
     /// Populates Wavetable
@@ -34,13 +34,14 @@ private:
     
     
     // Instances
-    DryWet dryWet;
+    DryWet          dryWet;
     SquareWavetable squareWT;
     
     // Member Variables
     float sampleRate;
     
-    AudioBuffer<float> sampleBuffer;
+    SmoothedValue<float> dryWetSmooth;
+    AudioBuffer<float>   sampleBuffer;
 };
 
 

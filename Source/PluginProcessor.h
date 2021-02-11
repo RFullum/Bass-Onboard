@@ -88,6 +88,7 @@ private:
     std::atomic<float>* waveShapeAmountParam;
     std::atomic<float>* waveShapeDryWetParam;
     std::atomic<float>* waveShapeOnOffParam;
+    bool waveshapeOn;
     
     std::atomic<float>* foldbackAmountParam;
     std::atomic<float>* foldbackDryWetParam;
@@ -100,6 +101,7 @@ private:
     // Spatial Params
     std::atomic<float>* haasWidthParam;
     std::atomic<float>* haasOnOffParam;
+    SmoothedValue<float> haasSmooth;
     
     // DSP Widgets
     dsp::Gain<float> inGain;

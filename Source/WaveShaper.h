@@ -17,10 +17,21 @@
 class WaveShaper
 {
 public:
+    WaveShaper();
+    ~WaveShaper();
+    
+    void setSampleRate(float SR);
+
     /// Returns an audio buffer of the dry/wet mixed Waveshaped signal
-    AudioBuffer<float> processWaveshape(AudioBuffer<float>& bufferIn, float wsAmount, float dryWetVal);
+    AudioBuffer<float> processWaveshape(AudioBuffer<float>& bufferIn, float wsAmount, float dryWetVal, float onOff);
 private:
     // Dry Wet Class Instance
     DryWet dryWet;
+    
+    // Member Variables
+    SmoothedValue<float> wsAmountSmooth;
+    SmoothedValue<float> dryWetSmooth;
+    
+    bool isOn;
     
 };

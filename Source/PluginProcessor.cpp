@@ -84,7 +84,9 @@ parameters(*this, nullptr, "ParameterTree", {
                                           NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
     std::make_unique<AudioParameterChoice>("haasOnOff", "Width On/Off", StringArray( {"Off", "On"} ), 0 )
     
-})
+}),
+
+waveshapeOn(false)
 
 // Constructor
 {
@@ -224,7 +226,14 @@ void BassOnboardAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     std::fill(lastDelayOutput.begin(), lastDelayOutput.end(), 0.0f);
     
     // Non Juce Processing
-    bitCrusher.prepare ( sampleRate );
+    waveShaper.setSampleRate ( sampleRate );
+    foldback.setSampleRate   ( sampleRate );
+    bitCrusher.prepare       ( sampleRate );
+    
+    
+    // Value smoothing
+    haasSmooth.reset          ( sampleRate, 0.01f );
+    haasSmooth.setTargetValue ( 0.0f );
     
 }
 
@@ -323,14 +332,25 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     
     
     // Distortions
-    if (*waveShapeOnOffParam == 1.0f)
-        effectsBuffer = waveShaper.processWaveshape( effectsBuffer, *waveShapeAmountParam, *waveShapeDryWetParam );
-
-    if (*foldbackOnOffParam == 1.0f)
-        effectsBuffer = foldback.processFoldback( effectsBuffer, *foldbackAmountParam, *foldbackDryWetParam );
+    effectsBuffer = waveShaper.processWaveshape ( effectsBuffer, *waveShapeAmountParam, *waveShapeDryWetParam, *waveShapeOnOffParam );
+    effectsBuffer = foldback.processFoldback    ( effectsBuffer, *foldbackAmountParam,  *foldbackDryWetParam,  *foldbackOnOffParam  );
+    effectsBuffer = bitCrusher.process          ( effectsBuffer, *bitcrushAmtParam,     *bitcrushDryWetParam,  *bitcrushOnOffParam  );
+      
+    int effectsSize = effectsBuffer.getNumSamples ();
+    float mag       = effectsBuffer.getMagnitude  ( 0, effectsSize );
     
-    if (*bitcrushOnOffParam == 1.0f)
-        effectsBuffer = bitCrusher.process( effectsBuffer, *bitcrushAmtParam, *bitcrushDryWetParam );
+    // Normalize effectsBuffer values
+    if (mag > 1.0f)
+    {
+        auto* writeL = effectsBuffer.getWritePointer ( 0 );
+        auto* writeR = effectsBuffer.getWritePointer ( 1 );
+        
+        for (int i = 0; i < effectsSize; i++)
+        {
+            writeL[i] = writeL[i] / mag;
+            writeR[i] = writeR[i] / mag;
+        }
+    }
     
     // DSP!
     for (int i=0; i<numSamples; i++)
@@ -348,10 +368,12 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     // Haas Widener
     if (*haasOnOffParam == 1.0f)
     {
-        float delayInSamples = *haasWidthParam * ( 0.03f * getSampleRate() );
-        
         for (int i = 0; i < numSamples; i++)
         {
+            haasSmooth.setTargetValue( *haasWidthParam );
+            
+            float delayInSamples = haasSmooth.getNextValue() * ( 0.03f * getSampleRate() );
+            
             haasDelay.pushSample(0, leftChannel[i]);
             
             leftChannel[i] = haasDelay.popSample( 0, delayInSamples, true );
