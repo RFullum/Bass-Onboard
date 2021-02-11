@@ -206,11 +206,11 @@ void BassOnboardAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     // Gains
     inGain.prepare                ( spec   );
     inGain.reset                  (        );
-    inGain.setRampDurationSeconds ( 0.001f );
+    inGain.setRampDurationSeconds ( 0.01f );
     
     outGain.prepare                ( spec   );
     outGain.reset                  (        );
-    outGain.setRampDurationSeconds ( 0.001f );
+    outGain.setRampDurationSeconds ( 0.01f );
     
     // Dynamics
     noiseGate.prepare ( spec );
