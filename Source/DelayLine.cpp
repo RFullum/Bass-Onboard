@@ -48,6 +48,10 @@ void DelayLine::setDelayTime(float setDelay)
     while (readHeadPos < 0)
         readHeadPos += bufferSizeSamples;
 }
+float DelayLine::getDelayTime()
+{
+    return delayTimeSamples;
+}
 
 /**
 sets feedbackAmt and ensures between 0.0 and 1.0

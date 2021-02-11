@@ -79,13 +79,9 @@ parameters(*this, nullptr, "ParameterTree", {
                                           NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
     std::make_unique<AudioParameterChoice>("bitcrushOnOf", "Bitcrush On/Off", StringArray( {"Off", "On"} ), 0 ),
     
-    std::make_unique<AudioParameterFloat>("hardSqDryWet", "HardSquare Dry/Wet",
-                                          NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
-    std::make_unique<AudioParameterChoice>("hardSqOnOff", "HardSquare On/Off", StringArray( {"Off", "On"} ), 0 ),
-    
     // Spatial Params
     std::make_unique<AudioParameterFloat>("haasWidth", "Width Amount",
-                                          NormalisableRange<float>(-1.0f, 1.0f, 0.001f, 1.0f, false), 0.0f, "" ),
+                                          NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
     std::make_unique<AudioParameterChoice>("haasOnOff", "Width On/Off", StringArray( {"Off", "On"} ), 0 )
     
 })
@@ -122,9 +118,6 @@ parameters(*this, nullptr, "ParameterTree", {
     bitcrushAmtParam    = parameters.getRawParameterValue ( "bitcrushAmt"    );
     bitcrushDryWetParam = parameters.getRawParameterValue ( "bitcrushDryWet" );
     bitcrushOnOffParam  = parameters.getRawParameterValue ( "bitcrushOnOf"   );
-    
-    hardSquareDryWetParam = parameters.getRawParameterValue ( "hardSqDryWet" );
-    hardSquareOnOffParam  = parameters.getRawParameterValue ( "hardSqOnOff"  );
     
     // Spatial Params
     haasWidthParam = parameters.getRawParameterValue ( "haasWidth" );
@@ -268,6 +261,16 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
     
+    // Audio input to buffer
+    int numSamples     = buffer.getNumSamples();
+    auto* leftChannel  = buffer.getWritePointer(0);
+    auto* rightChannel = buffer.getWritePointer(1);
+    
+    //
+    //*** TEMP MONO FOR TESTING *** Mirror right channel bass input on left channel as well ********************************
+    //
+    for (int i = 0; i < numSamples; i++)
+        leftChannel[i] = rightChannel[i];
     
     // Create the AudioBlock for DSP widgets
     dsp::AudioBlock<float> sampleBlock ( buffer );
@@ -310,10 +313,11 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     effectsBuffer.clear();
     effectsBuffer.makeCopyOf( buffer );
     
+    
     // Distortions
     if (*waveShapeOnOffParam == 1.0f)
         effectsBuffer = waveShaper.processWaveshape( effectsBuffer, *waveShapeAmountParam, *waveShapeDryWetParam );
-    
+
     if (*foldbackOnOffParam == 1.0f)
         effectsBuffer = foldback.processFoldback( effectsBuffer, *foldbackAmountParam, *foldbackDryWetParam );
     
@@ -323,11 +327,6 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     // Spatialization
     if (*haasOnOffParam == 1.0f)
         effectsBuffer = haas.process( effectsBuffer, *haasWidthParam );
-
-    // Audio input to buffer
-    int numSamples     = buffer.getNumSamples();
-    auto* leftChannel  = buffer.getWritePointer(0);
-    auto* rightChannel = buffer.getWritePointer(1);
     
     // DSP!
     for (int i=0; i<numSamples; i++)
@@ -335,8 +334,10 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
         // Apply distortion
         for (int channel = 0; channel < effectsBuffer.getNumChannels(); channel++)
         {
-            leftChannel[i]  = effectsBuffer.getSample ( channel, i );
-            rightChannel[i] = effectsBuffer.getSample ( channel, i );
+            if (channel == 0)
+                leftChannel[i]  = effectsBuffer.getSample ( channel, i );
+            if (channel == 1)
+                rightChannel[i] = effectsBuffer.getSample ( channel, i );
         }
     }
     

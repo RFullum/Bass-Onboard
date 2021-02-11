@@ -47,12 +47,3 @@ private:
 //=========================================================
 //=========================================================
 //=========================================================
-
-class HardSquare
-{
-public:
-    AudioBuffer<float> process(AudioBuffer<float>& bufferIn, float dryWetVal);
-    
-private:
-    DryWet dryWet;
-};

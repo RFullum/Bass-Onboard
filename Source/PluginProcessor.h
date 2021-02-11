@@ -98,9 +98,6 @@ private:
     std::atomic<float>* bitcrushDryWetParam;
     std::atomic<float>* bitcrushOnOffParam;
     
-    std::atomic<float>* hardSquareDryWetParam;
-    std::atomic<float>* hardSquareOnOffParam;
-    
     // Spatial Params
     std::atomic<float>* haasWidthParam;
     std::atomic<float>* haasOnOffParam;
@@ -115,7 +112,6 @@ private:
     WaveShaper         waveShaper;
     FoldbackDistortion foldback;
     BitCrusher         bitCrusher;
-    HardSquare         hardSquare;
     HaasWide           haas;
     
     //==============================================================================

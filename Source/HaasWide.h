@@ -11,7 +11,8 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "DelayLine.h"
+//#include "DelayLine.h"
+#include "StereoDelayLine.h"
 #include "DryWet.h"
 
 class HaasWide
@@ -34,8 +35,9 @@ private:
     float delaySizeSamples;
     
     // Instances
-    DelayLine delayL;
-    DelayLine delayR;
+    //DelayLine delayL;
+    //DelayLine delayR;
+    StereoDelayLine delayLine;
     
     DryWet dryWet;
 };

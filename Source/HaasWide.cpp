@@ -27,47 +27,23 @@ void HaasWide::setSampleRate(float SR)
 /// Takes in AudioBuffer, haas width (-1 to 1 :: Left Delay to Right Delay). Returns widened AudioBuffer
 AudioBuffer<float> HaasWide::process(AudioBuffer<float>& bufferIn, float width)
 {
-    AudioBuffer<float> bufferOut( bufferIn );
+    // Set width mapped to size in samples
+    delayLine.setDelayTime( jmap( width, 0.0f, delaySizeSamples ), 0.0f );
     
-    // Map width to Delay Amount in samples
-    float delayAmt = jmap( std::fabsf( width ), 0.0f, delaySizeSamples );
+    auto* readL  = bufferIn.getReadPointer  (0);
+    auto* readR  = bufferIn.getReadPointer  (1);
+    auto* writeL = bufferIn.getWritePointer (0);
+    auto* writeR = bufferIn.getWritePointer (1);
     
-    // Apply delayAmt to L or R delay depending on width direction
-    if (width >= 0.0f)
+    for (int sample = 0; sample < bufferIn.getNumSamples(); sample++)
     {
-        delayL.setDelayTime ( 0.0f );
-        delayR.setDelayTime ( delayAmt );
-    }
-    else
-    {
-        delayL.setDelayTime( delayAmt );
-        delayR.setDelayTime( 0.0f );
-    }
-    
-    for (int channel = 0; channel < bufferIn.getNumChannels(); channel++)
-    {
-        for (int sample = 0; sample < bufferIn.getNumSamples(); sample++)
-        {
-            
-            
-            if (channel == 0)
-            {
-                float sampleL = delayL.processDelay( bufferIn.getSample( 0, sample ) );
-                
-                bufferOut.setSample( channel, sample, sampleL );
-            }
-            
-            if (channel == 1)
-            {
-                float sampleR = delayR.processDelay( bufferIn.getSample( 1, sample ) );
-                
-                bufferOut.setSample( channel, sample, sampleR );
-            }
-        }
+        delayLine.processDelay( readL[sample], readR[sample] );
+        
+        writeL[sample] = delayLine.getDelayOutputLeft  ();
+        writeR[sample] = delayLine.getDelayOutputRight ();
     }
     
-    
-    return bufferOut;
+    return bufferIn;
 }
 
 
@@ -75,8 +51,7 @@ AudioBuffer<float> HaasWide::process(AudioBuffer<float>& bufferIn, float width)
 void HaasWide::setDelaySize()
 {
     // Size in samples = 30ms * samplerate
-    delaySizeSamples = 0.03f * sampleRate;
+    delaySizeSamples = 0.5f * sampleRate;
     
-    delayL.setBufferSize( delaySizeSamples );
-    delayR.setBufferSize( delaySizeSamples );
+    delayLine.setBufferSize( delaySizeSamples );
 }

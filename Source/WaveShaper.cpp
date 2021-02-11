@@ -13,22 +13,19 @@
 
 AudioBuffer<float> WaveShaper::processWaveshape(AudioBuffer<float>& bufferIn, float wsAmount, float dryWetVal)
 {
-    int numChans = bufferIn.getNumChannels();
-    int numSamps = bufferIn.getNumSamples();
+    auto* readL = bufferIn.getReadPointer(0);
+    auto* readR = bufferIn.getReadPointer(1);
+    auto* writeL = bufferIn.getWritePointer(0);
+    auto* writeR = bufferIn.getWritePointer(1);
     
-    AudioBuffer<float> bufferOut ( numChans, numSamps );
-    
-    for (int chan = 0; chan < numChans; ++chan )
+    for (int sample = 0; sample < bufferIn.getNumSamples(); sample++)
     {
-        for (int sample = 0; sample < numSamps; ++sample )
-        {
-            float drySample = bufferIn.getSample                ( chan, sample );
-            float wetSample = dsp::FastMathApproximations::tanh ( drySample * wsAmount );
-            float outSample = dryWet.dryWetMixEqualPower        ( drySample, wetSample, dryWetVal );
-            
-            bufferOut.setSample ( chan, sample, outSample );
-        }
+        float wetSampleL = dsp::FastMathApproximations::tanh( readL[sample] * wsAmount );
+        float wetSampleR = dsp::FastMathApproximations::tanh( readR[sample] * wsAmount );
+        
+        writeL[sample] = dryWet.dryWetMixEqualPower( readL[sample], wetSampleL, dryWetVal );
+        writeR[sample] = dryWet.dryWetMixEqualPower( readR[sample], wetSampleR, dryWetVal );
     }
     
-    return bufferOut;
+    return bufferIn;
 }

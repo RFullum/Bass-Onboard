@@ -81,27 +81,3 @@ AudioBuffer<float> BitCrusher::crush(float dryWetAmt)
     return bufferOut;
 }
 
-
-
-//=========================================================
-//=========================================================
-//=========================================================
-
-//ADD DRY WET
-AudioBuffer<float> HardSquare::process(AudioBuffer<float>& bufferIn, float dryWetVal)
-{
-    AudioBuffer<float> bufferOut(bufferIn);
-    
-    for (int channel = 0; channel < bufferIn.getNumChannels(); channel++)
-    {
-        for (int sample = 0; sample < bufferIn.getNumSamples(); sample++)
-        {
-            float sampleIn = bufferIn.getSample ( channel, sample );
-            float sqSample = ( sampleIn >= 0.0f ) ? 1.0f : -1.0f;
-            
-            bufferOut.setSample( channel, sample, dryWet.dryWetMixEqualPower(sampleIn, sqSample, dryWetVal) );
-        }
-    }
-    
-    return bufferOut;
-}

@@ -12,23 +12,19 @@
 
 AudioBuffer<float> FoldbackDistortion::processFoldback(AudioBuffer<float>& bufferIn, float foldbackAmount, float dryWetVal)
 {
-    int numChan = bufferIn.getNumChannels();
-    int numSamp = bufferIn.getNumSamples();
+    auto* readL = bufferIn.getReadPointer(0);
+    auto* readR = bufferIn.getReadPointer(1);
+    auto* writeL = bufferIn.getWritePointer(0);
+    auto* writeR = bufferIn.getWritePointer(1);
     
-    AudioBuffer<float> bufferOut( numChan, numSamp );
-    
-    for (int chan = 0; chan < numChan; ++chan )
+    for (int sample = 0; sample < bufferIn.getNumSamples(); sample++)
     {
-        for (int sample = 0; sample < numSamp; ++sample )
-        {
-            float drySamp = bufferIn.getSample         ( chan, sample );
-            float wetSamp = std::sin                   ( drySamp * foldbackAmount );
-            float outSamp = dryWet.dryWetMixEqualPower ( drySamp, wetSamp, dryWetVal );
-            
-            bufferOut.setSample( chan, sample, outSamp );
-        }
+        float wetSampleL = dsp::FastMathApproximations::sin( readL[sample] * foldbackAmount );
+        float wetSampleR = dsp::FastMathApproximations::sin( readR[sample] * foldbackAmount );
+        
+        writeL[sample] = dryWet.dryWetMixEqualPower( readL[sample], wetSampleL, dryWetVal );
+        writeR[sample] = dryWet.dryWetMixEqualPower( readR[sample], wetSampleR, dryWetVal );
     }
     
-    return  bufferOut;
-    
+    return bufferIn;
 }

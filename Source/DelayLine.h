@@ -34,6 +34,7 @@ public:
      wrapped 0 <= X < bufferSizeSamples
      */
     void setDelayTime(float setDelay);
+    float getDelayTime();
     
     /**
      sets feedbackAmt and ensures between 0.0 and 1.0
