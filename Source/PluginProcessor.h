@@ -13,7 +13,6 @@
 #include "WaveShaper.h"
 #include "FoldbackDistortion.h"
 #include "BitCrusher.h"
-#include "HaasWide.h"
 
 //==============================================================================
 /**
@@ -107,12 +106,14 @@ private:
     dsp::Gain<float> outGain;
     dsp::NoiseGate<float> noiseGate;
     dsp::Compressor<float> comp;
+    dsp::DelayLine<float, dsp::DelayLineInterpolationTypes::Lagrange3rd> haasDelay { 192000 };
+    std::array<float, 2> delayValue { {} };
+    std::array<float, 2> lastDelayOutput;
     
     // Non JUCE Processing Classes
     WaveShaper         waveShaper;
     FoldbackDistortion foldback;
     BitCrusher         bitCrusher;
-    HaasWide           haas;
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BassOnboardAudioProcessor)

@@ -201,6 +201,7 @@ void BassOnboardAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     
     
     // DSP Widgets
+    // Gains
     inGain.prepare                ( spec   );
     inGain.reset                  (        );
     inGain.setRampDurationSeconds ( 0.001f );
@@ -209,15 +210,22 @@ void BassOnboardAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     outGain.reset                  (        );
     outGain.setRampDurationSeconds ( 0.001f );
     
+    // Dynamics
     noiseGate.prepare ( spec );
     noiseGate.reset   ();
     
     comp.prepare ( spec );
     comp.reset   ();
     
+    // Spatial
+    haasDelay.prepare ( spec );
+    haasDelay.reset   ();
+    
+    std::fill(lastDelayOutput.begin(), lastDelayOutput.end(), 0.0f);
+    
     // Non Juce Processing
     bitCrusher.prepare ( sampleRate );
-    haas.setSampleRate ( sampleRate );
+    
 }
 
 void BassOnboardAudioProcessor::releaseResources()
@@ -324,10 +332,6 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     if (*bitcrushOnOffParam == 1.0f)
         effectsBuffer = bitCrusher.process( effectsBuffer, *bitcrushAmtParam, *bitcrushDryWetParam );
     
-    // Spatialization
-    if (*haasOnOffParam == 1.0f)
-        effectsBuffer = haas.process( effectsBuffer, *haasWidthParam );
-    
     // DSP!
     for (int i=0; i<numSamples; i++)
     {
@@ -340,6 +344,21 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
                 rightChannel[i] = effectsBuffer.getSample ( channel, i );
         }
     }
+    
+    // Haas Widener
+    if (*haasOnOffParam == 1.0f)
+    {
+        float delayInSamples = *haasWidthParam * ( 0.03f * getSampleRate() );
+        
+        for (int i = 0; i < numSamples; i++)
+        {
+            haasDelay.pushSample(0, leftChannel[i]);
+            
+            leftChannel[i] = haasDelay.popSample( 0, delayInSamples, true );
+        }
+    }
+    
+    
     
     outGain.setGainDecibels ( *outGainDBParam );
     outGain.process         ( dsp::ProcessContextReplacing<float>(sampleBlock) );

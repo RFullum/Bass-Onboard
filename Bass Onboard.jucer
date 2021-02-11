@@ -23,14 +23,6 @@
       <FILE id="Ro9lqX" name="Wavetable.h" compile="0" resource="0" file="Source/Wavetable.h"/>
       <FILE id="aHoL9s" name="Oscillators.cpp" compile="1" resource="0" file="Source/Oscillators.cpp"/>
       <FILE id="qHDfJz" name="Oscillators.h" compile="0" resource="0" file="Source/Oscillators.h"/>
-      <FILE id="taHJEA" name="HaasWide.cpp" compile="1" resource="0" file="Source/HaasWide.cpp"/>
-      <FILE id="x9tXCH" name="HaasWide.h" compile="0" resource="0" file="Source/HaasWide.h"/>
-      <FILE id="PWfHYB" name="StereoDelayLine.cpp" compile="1" resource="0"
-            file="Source/StereoDelayLine.cpp"/>
-      <FILE id="fMHgyj" name="StereoDelayLine.h" compile="0" resource="0"
-            file="Source/StereoDelayLine.h"/>
-      <FILE id="nRwHYD" name="DelayLine.cpp" compile="1" resource="0" file="Source/DelayLine.cpp"/>
-      <FILE id="u8weoM" name="DelayLine.h" compile="0" resource="0" file="Source/DelayLine.h"/>
       <FILE id="ldXMg8" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="fFTxtu" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
