@@ -30,7 +30,7 @@ BassOnboardAudioProcessor::BassOnboardAudioProcessor()
 //                 default, param label, param category, string from value, string to value
 //
 // ParameterChoices:
-// id, descript, choices (StringArray), default index of StringArray
+// id, description, StringArray( {"choice1", "choice2", ... } ), default index of StringArray
 //
 parameters(*this, nullptr, "ParameterTree", {
     // Gain params
@@ -38,6 +38,7 @@ parameters(*this, nullptr, "ParameterTree", {
                                           NormalisableRange<float>(-100.0f, 12.0f, 0.01f, 2.0f, true), 0.0f, "dB" ),
     std::make_unique<AudioParameterFloat>("outGain", "Output Gain",
                                           NormalisableRange<float>(-100.0f, 12.0f, 0.01f, 2.0f, true), 0.0f, "dB" ),
+    
     // Noise Gate Params
     std::make_unique<AudioParameterFloat>("ngThresh", "Noise Gate Threshold",
                                           NormalisableRange<float>(-100.0f, 12.0f, 0.01f, 2.0f, false), -96.0f, "dB" ),
@@ -61,32 +62,42 @@ parameters(*this, nullptr, "ParameterTree", {
     std::make_unique<AudioParameterChoice>("compOnOff", "Compressor On/Off", StringArray( {"Off", "On"} ), 0 ),
     
     // Distortion Params
+    // Waveshaper
     std::make_unique<AudioParameterFloat>("wsAmt", "Waveshape Amount",
                                           NormalisableRange<float>(1.0f, 200.0f, 0.01f, 1.0f, false), 1.0f, "" ),
     std::make_unique<AudioParameterFloat>("wsDryWet", "Waveshape Dry/Wet",
                                           NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
     std::make_unique<AudioParameterChoice>("wsOnOff", "Waveshape On/Off", StringArray( {"Off", "On"} ), 0 ),
     
+    // Foldback
     std::make_unique<AudioParameterFloat>("foldbackAmt", "Foldback Amount",
                                           NormalisableRange<float>(1.0f, 200.0f, 0.01f, 0.325f, false), 1.0f, "" ),
     std::make_unique<AudioParameterFloat>("foldbackDryWet", "Foldback Dry/Wet",
                                           NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
     std::make_unique<AudioParameterChoice>("foldbackOnOff", "Foldback On/Off", StringArray( {"Off", "On"} ), 0 ),
     
+    // Bitcrusher
     std::make_unique<AudioParameterFloat>("bitcrushAmt", "Bitcrush Amount",
                                           NormalisableRange<float>(0.0f, 1.0f, 0.01f, 0.325f, false), 1.0f, "" ),
     std::make_unique<AudioParameterFloat>("bitcrushDryWet", "Bitcrush Dry/Wet",
                                           NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
-    std::make_unique<AudioParameterChoice>("bitcrushOnOf", "Bitcrush On/Off", StringArray( {"Off", "On"} ), 0 ),
+    std::make_unique<AudioParameterChoice>("bitcrushOnOff", "Bitcrush On/Off", StringArray( {"Off", "On"} ), 0 ),
+    
+    // Filtering Params
+    std::make_unique<AudioParameterFloat>("svFiltCutoff", "Filter Cutoff",
+                                          NormalisableRange<float>(20.0f, 18000.0f, 0.01f, 0.25f, false), 18000.0f, "" ),
+    std::make_unique<AudioParameterFloat>("svFiltRes", "Filter Resonance",
+                                          NormalisableRange<float>(0.70f, 2.5f, 0.01, 0.75f, false), 0.70, "" ),
+    std::make_unique<AudioParameterChoice>("svFiltType", "Filter Type", StringArray( {"LPF", "BPF", "HPF"} ), 0 ),
+    std::make_unique<AudioParameterChoice>("svFiltPoles", "Filter Poles", StringArray( {"1 pole : -12dB", "2 pole : -24dB"} ), 0 ),
+    std::make_unique<AudioParameterChoice>("svFiltOnOff", "Filter On/Off", StringArray( {"Off", "On"} ), 0 ),
     
     // Spatial Params
     std::make_unique<AudioParameterFloat>("haasWidth", "Width Amount",
                                           NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
     std::make_unique<AudioParameterChoice>("haasOnOff", "Width On/Off", StringArray( {"Off", "On"} ), 0 )
     
-}),
-
-waveshapeOn(false)
+})
 
 // Constructor
 {
@@ -119,7 +130,14 @@ waveshapeOn(false)
     
     bitcrushAmtParam    = parameters.getRawParameterValue ( "bitcrushAmt"    );
     bitcrushDryWetParam = parameters.getRawParameterValue ( "bitcrushDryWet" );
-    bitcrushOnOffParam  = parameters.getRawParameterValue ( "bitcrushOnOf"   );
+    bitcrushOnOffParam  = parameters.getRawParameterValue ( "bitcrushOnOff"   );
+    
+    // Filter Params
+    svFilterCutoffParam    = parameters.getRawParameterValue ( "svFiltCutoff" );
+    svFilterResonanceParam = parameters.getRawParameterValue ( "svFiltRes"    );
+    svFilterTypeParam      = parameters.getRawParameterValue ( "svFiltType"   );
+    svFilterPolesParam     = parameters.getRawParameterValue ( "svFiltPoles"  );
+    svFilterOnOffParam     = parameters.getRawParameterValue ( "svFiltOnOff"  );
     
     // Spatial Params
     haasWidthParam = parameters.getRawParameterValue ( "haasWidth" );
@@ -203,13 +221,14 @@ void BassOnboardAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     
     
     // DSP Widgets
+    
     // Gains
-    inGain.prepare                ( spec   );
-    inGain.reset                  (        );
+    inGain.prepare                ( spec );
+    inGain.reset                  ();
     inGain.setRampDurationSeconds ( 0.01f );
     
-    outGain.prepare                ( spec   );
-    outGain.reset                  (        );
+    outGain.prepare                ( spec );
+    outGain.reset                  ();
     outGain.setRampDurationSeconds ( 0.01f );
     
     // Dynamics
@@ -223,7 +242,11 @@ void BassOnboardAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     haasDelay.prepare ( spec );
     haasDelay.reset   ();
     
-    std::fill(lastDelayOutput.begin(), lastDelayOutput.end(), 0.0f);
+    // Filter
+    svFilter1.prepare ( spec );
+    svFilter2.prepare ( spec );
+    svFilter1.reset   ();
+    svFilter2.reset   ();
     
     // Non Juce Processing
     waveShaper.setSampleRate ( sampleRate );
@@ -232,6 +255,11 @@ void BassOnboardAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     
     
     // Value smoothing
+    svFilterCutoffSmooth.reset             ( sampleRate, 0.01f );
+    svFilterCutoffSmooth.setTargetValue    ( 18000.0f );
+    svFilterResonanceSmooth.reset          ( sampleRate, 0.01f );
+    svFilterResonanceSmooth.setTargetValue ( 0.70f );
+    
     haasSmooth.reset          ( sampleRate, 0.01f );
     haasSmooth.setTargetValue ( 0.0f );
     
@@ -306,8 +334,6 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
         noiseGate.process      ( dsp::ProcessContextReplacing<float>(sampleBlock) );
     }
     
-    
-    
     // Apply Compressor
     if (*compOnOffParam)
     {
@@ -317,10 +343,6 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
         comp.setRatio     ( *compRatioParam  );
         comp.process      ( dsp::ProcessContextReplacing<float>(sampleBlock) );
     }
-    else
-    
-    int bufferChannels = buffer.getNumChannels();
-    int bufferSamples  = buffer.getNumSamples();
     
     
     // Apply Effects
@@ -330,32 +352,28 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     effectsBuffer.clear();
     effectsBuffer.makeCopyOf( buffer );
     
+    int effectsSize = effectsBuffer.getNumSamples ();
+    
+    //auto* writeL = effectsBuffer.getWritePointer ( 0 );
+    //auto* writeR = effectsBuffer.getWritePointer ( 1 );
     
     // Distortions
     effectsBuffer = waveShaper.processWaveshape ( effectsBuffer, *waveShapeAmountParam, *waveShapeDryWetParam, *waveShapeOnOffParam );
     effectsBuffer = foldback.processFoldback    ( effectsBuffer, *foldbackAmountParam,  *foldbackDryWetParam,  *foldbackOnOffParam  );
     effectsBuffer = bitCrusher.process          ( effectsBuffer, *bitcrushAmtParam,     *bitcrushDryWetParam,  *bitcrushOnOffParam  );
-      
-    int effectsSize = effectsBuffer.getNumSamples ();
-    float mag       = effectsBuffer.getMagnitude  ( 0, effectsSize );
     
-    // Normalize effectsBuffer values
+    
+    // Normalize effectsBuffer values by dividing all samples by magnitude (multiply by reciprocal of mag)
+    float mag = effectsBuffer.getMagnitude  ( 0, effectsSize );
+    
     if (mag > 1.0f)
     {
-        auto* writeL = effectsBuffer.getWritePointer ( 0 );
-        auto* writeR = effectsBuffer.getWritePointer ( 1 );
-        
-        for (int i = 0; i < effectsSize; i++)
-        {
-            writeL[i] = writeL[i] / mag;
-            writeR[i] = writeR[i] / mag;
-        }
+        effectsBuffer.applyGain(0, effectsSize, 1.0f / mag);
     }
     
-    // DSP!
+    // Apply effectsBuffer to buffer via write pointers
     for (int i=0; i<numSamples; i++)
     {
-        // Apply distortion
         for (int channel = 0; channel < effectsBuffer.getNumChannels(); channel++)
         {
             if (channel == 0)
@@ -364,6 +382,67 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
                 rightChannel[i] = effectsBuffer.getSample ( channel, i );
         }
     }
+    
+    
+    // Filtering
+    
+    // Filter type selection
+    switch ( (int)*svFilterTypeParam )
+    {
+        case 0:
+            svFilter1.setType ( dsp::StateVariableTPTFilterType::lowpass );
+            svFilter2.setType ( dsp::StateVariableTPTFilterType::lowpass );
+            break;
+        case 1:
+            svFilter1.setType ( dsp::StateVariableTPTFilterType::bandpass );
+            svFilter2.setType ( dsp::StateVariableTPTFilterType::bandpass );
+            break;
+        case 2:
+            svFilter1.setType ( dsp::StateVariableTPTFilterType::highpass );
+            svFilter2.setType ( dsp::StateVariableTPTFilterType::highpass );
+            break;
+        default:
+            svFilter1.setType ( dsp::StateVariableTPTFilterType::lowpass );
+            svFilter2.setType ( dsp::StateVariableTPTFilterType::lowpass );
+            break;
+    }
+    
+    // Filter Processing
+    if (*svFilterOnOffParam == 1.0f)
+    {
+        // Cutoff and Resonance smoothing
+        svFilterCutoffSmooth.setTargetValue    ( *svFilterCutoffParam    );
+        svFilterResonanceSmooth.setTargetValue ( *svFilterResonanceParam );
+        
+        // Smooth values and apply filter per sample
+        for (int sample = 0; sample < numSamples; sample++)
+        {
+            svFilter1.setCutoffFrequency ( svFilterCutoffSmooth.getNextValue()    );
+            svFilter1.setResonance       ( svFilterResonanceSmooth.getNextValue() );
+            svFilter2.setCutoffFrequency ( svFilterCutoffSmooth.getNextValue()    );
+            svFilter2.setResonance       ( svFilterResonanceSmooth.getNextValue() );
+            
+            // 1 pole/2 pole filter switch
+            switch ( (int)*svFilterPolesParam )
+            {
+                case 0:     // One Pole -12dB
+                    leftChannel[sample]  = svFilter1.processSample ( 0, leftChannel[sample]  );
+                    rightChannel[sample] = svFilter1.processSample ( 1, rightChannel[sample] );
+                    break;
+                case 1:     // Two Pole -24dB
+                    leftChannel[sample]  = svFilter2.processSample ( 0, svFilter1.processSample ( 0, leftChannel[sample]  ) );
+                    rightChannel[sample] = svFilter2.processSample ( 1, svFilter1.processSample ( 1, rightChannel[sample] ) );
+                    break;
+                default:    // One Pole -12dB
+                    leftChannel[sample]  = svFilter1.processSample ( 0, leftChannel[sample]  );
+                    rightChannel[sample] = svFilter1.processSample ( 1, rightChannel[sample] );
+                    break;
+            }
+        }
+        svFilter1.snapToZero();
+        svFilter2.snapToZero();
+    }
+    
     
     // Haas Widener
     if (*haasOnOffParam == 1.0f)

@@ -88,7 +88,6 @@ private:
     std::atomic<float>* waveShapeAmountParam;
     std::atomic<float>* waveShapeDryWetParam;
     std::atomic<float>* waveShapeOnOffParam;
-    bool waveshapeOn;
     
     std::atomic<float>* foldbackAmountParam;
     std::atomic<float>* foldbackDryWetParam;
@@ -103,14 +102,24 @@ private:
     std::atomic<float>* haasOnOffParam;
     SmoothedValue<float> haasSmooth;
     
-    // DSP Widgets
+    // Filter Params
+    std::atomic<float>* svFilterCutoffParam;
+    std::atomic<float>* svFilterResonanceParam;
+    std::atomic<float>* svFilterTypeParam;
+    std::atomic<float>* svFilterPolesParam;
+    std::atomic<float>* svFilterOnOffParam;
+    SmoothedValue<float> svFilterCutoffSmooth;
+    SmoothedValue<float> svFilterResonanceSmooth;
+    
+    // DSP Widgets & Processors
     dsp::Gain<float> inGain;
     dsp::Gain<float> outGain;
     dsp::NoiseGate<float> noiseGate;
     dsp::Compressor<float> comp;
     dsp::DelayLine<float, dsp::DelayLineInterpolationTypes::Lagrange3rd> haasDelay { 192000 };
-    std::array<float, 2> delayValue { {} };
-    std::array<float, 2> lastDelayOutput;
+    dsp::StateVariableTPTFilter<float> svFilter1;
+    dsp::StateVariableTPTFilter<float> svFilter2;
+    
     
     // Non JUCE Processing Classes
     WaveShaper         waveShaper;
