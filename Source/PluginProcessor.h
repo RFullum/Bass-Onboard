@@ -13,6 +13,7 @@
 #include "WaveShaper.h"
 #include "FoldbackDistortion.h"
 #include "BitCrusher.h"
+#include "FileReader.h"
 
 //==============================================================================
 /**
@@ -125,6 +126,9 @@ private:
     WaveShaper         waveShaper;
     FoldbackDistortion foldback;
     BitCrusher         bitCrusher;
+    
+    // Data File Reading
+    FileReader fileReader;
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BassOnboardAudioProcessor)

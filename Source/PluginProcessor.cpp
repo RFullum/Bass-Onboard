@@ -32,7 +32,8 @@ BassOnboardAudioProcessor::BassOnboardAudioProcessor()
 // ParameterChoices:
 // id, description, StringArray( {"choice1", "choice2", ... } ), default index of StringArray
 //
-parameters(*this, nullptr, "ParameterTree", {
+parameters(*this, nullptr, "ParameterTree",
+{
     // Gain params
     std::make_unique<AudioParameterFloat>("inGain", "Input Gain",
                                           NormalisableRange<float>(-100.0f, 12.0f, 0.01f, 2.0f, true), 0.0f, "dB" ),
@@ -316,6 +317,26 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     //
     for (int i = 0; i < numSamples; i++)
         leftChannel[i] = rightChannel[i];
+    
+    //
+    //*** TEMP FILE HANDLING ****************************************************************************************
+    //
+    /*
+    if (fileReader.getDataLines().size() >= 3)
+    {
+        String a = fileReader.getDataLines()[0];
+        String b = fileReader.getDataLines()[1];
+        String c = fileReader.getDataLines()[2];
+        DBG(a);
+        DBG(b);
+        DBG(c);
+        DBG("");
+    }
+    */
+    
+    
+    
+    //float a = std::cin >>
     
     // Create the AudioBlock for DSP widgets
     dsp::AudioBlock<float> sampleBlock ( buffer );
