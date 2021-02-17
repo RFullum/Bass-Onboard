@@ -99,6 +99,13 @@ private:
     std::atomic<float>* bitcrushOnOffParam;
     
     // Spatial Params
+    std::atomic<float>* delayFXTimeParam;
+    std::atomic<float>* delayFXFeedbackParam;
+    std::atomic<float>* delayFXDryWetParam;
+    std::atomic<float>* delayFXOnOffParam;
+    SmoothedValue<float> delayFXTimeSmooth;
+    SmoothedValue<float> delayFXFeedbackSmooth;
+    
     std::atomic<float>* haasWidthParam;
     std::atomic<float>* haasOnOffParam;
     SmoothedValue<float> haasSmooth;
@@ -117,6 +124,7 @@ private:
     dsp::Gain<float> outGain;
     dsp::NoiseGate<float> noiseGate;
     dsp::Compressor<float> comp;
+    dsp::DelayLine<float, dsp::DelayLineInterpolationTypes::Lagrange3rd> delayFX   { 192000 };
     dsp::DelayLine<float, dsp::DelayLineInterpolationTypes::Lagrange3rd> haasDelay { 192000 };
     dsp::StateVariableTPTFilter<float> svFilter1;
     dsp::StateVariableTPTFilter<float> svFilter2;
@@ -126,6 +134,7 @@ private:
     WaveShaper         waveShaper;
     FoldbackDistortion foldback;
     BitCrusher         bitCrusher;
+    DryWet             delayFXDryWet;
     
     // Data File Reading
     FileReader fileReader;

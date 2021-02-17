@@ -94,6 +94,16 @@ parameters(*this, nullptr, "ParameterTree",
     std::make_unique<AudioParameterChoice>("svFiltOnOff", "Filter On/Off", StringArray( {"Off", "On"} ), 0 ),
     
     // Spatial Params
+    // Delay FX
+    std::make_unique<AudioParameterFloat>("delayFXTime", "Delay FX Time",
+                                          NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
+    std::make_unique<AudioParameterFloat>("delayFXFdbck", "Delay FX Feedback",
+                                          NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
+    std::make_unique<AudioParameterFloat>("delayFXDryWet", "Delay FX Dry/Wet",
+                                          NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
+    std::make_unique<AudioParameterChoice>("delayFXOnOff", "Delay FX On/Off", StringArray( {"Off", "On"} ), 0 ),
+    
+    // Haas Wide
     std::make_unique<AudioParameterFloat>("haasWidth", "Width Amount",
                                           NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
     std::make_unique<AudioParameterChoice>("haasOnOff", "Width On/Off", StringArray( {"Off", "On"} ), 0 )
@@ -141,6 +151,11 @@ parameters(*this, nullptr, "ParameterTree",
     svFilterOnOffParam     = parameters.getRawParameterValue ( "svFiltOnOff"  );
     
     // Spatial Params
+    delayFXTimeParam     = parameters.getRawParameterValue ( "delayFXTime"   );
+    delayFXFeedbackParam = parameters.getRawParameterValue ( "delayFXFdbck"  );
+    delayFXDryWetParam   = parameters.getRawParameterValue ( "delayFXDryWet" );
+    delayFXOnOffParam    = parameters.getRawParameterValue ( "delayFXOnOff"  );
+    
     haasWidthParam = parameters.getRawParameterValue ( "haasWidth" );
     haasOnOffParam = parameters.getRawParameterValue ( "haasOnOff" );
 }
@@ -240,6 +255,9 @@ void BassOnboardAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     comp.reset   ();
     
     // Spatial
+    delayFX.prepare ( spec );
+    delayFX.reset   ();
+    
     haasDelay.prepare ( spec );
     haasDelay.reset   ();
     
@@ -260,6 +278,11 @@ void BassOnboardAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     svFilterCutoffSmooth.setTargetValue    ( 18000.0f );
     svFilterResonanceSmooth.reset          ( sampleRate, 0.01f );
     svFilterResonanceSmooth.setTargetValue ( 0.70f );
+    
+    delayFXTimeSmooth.reset              ( sampleRate, 0.01f );
+    delayFXTimeSmooth.setTargetValue     ( 0.0f );
+    delayFXFeedbackSmooth.reset          ( sampleRate, 0.01f );
+    delayFXFeedbackSmooth.setTargetValue ( 0.0f );
     
     haasSmooth.reset          ( sampleRate, 0.01f );
     haasSmooth.setTargetValue ( 0.0f );
@@ -309,6 +332,7 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     
     // Audio input to buffer
     int numSamples     = buffer.getNumSamples();
+    float sampleRate   = getSampleRate();
     auto* leftChannel  = buffer.getWritePointer(0);
     auto* rightChannel = buffer.getWritePointer(1);
     
@@ -405,6 +429,33 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     }
     
     
+    // Delay FX
+    if (*delayFXOnOffParam == 1.0f)
+    {
+        delayFXTimeSmooth.setTargetValue     ( *delayFXTimeParam     );
+        delayFXFeedbackSmooth.setTargetValue ( *delayFXFeedbackParam );
+        
+        for (int sample = 0; sample < numSamples; sample++)
+        {
+            float delayTimeSamples = delayFXTimeSmooth.getNextValue() * sampleRate;    // 1 second delay max
+            float feedbackAmt      = delayFXFeedbackSmooth.getNextValue();
+            
+            float delaySampleL = delayFX.popSample ( 0, delayTimeSamples, true );
+            float delaySampleR = delayFX.popSample ( 1, delayTimeSamples, true );
+            
+            delayFX.pushSample ( 0, leftChannel[sample]  + (delaySampleL * feedbackAmt) );
+            delayFX.pushSample ( 1, rightChannel[sample] + (delaySampleR * feedbackAmt) );
+            
+            leftChannel[sample]  = delayFXDryWet.dryWetMixEqualPower( leftChannel[sample],
+                                                                      delaySampleL,
+                                                                      *delayFXDryWetParam );
+            rightChannel[sample] = delayFXDryWet.dryWetMixEqualPower( rightChannel[sample],
+                                                                      delaySampleR,
+                                                                      *delayFXDryWetParam );
+        }
+    }
+    
+    
     // Filtering
     
     // Filter type selection
@@ -427,6 +478,7 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
             svFilter2.setType ( dsp::StateVariableTPTFilterType::lowpass );
             break;
     }
+    
     
     // Filter Processing
     if (*svFilterOnOffParam == 1.0f)
@@ -468,11 +520,11 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     // Haas Widener
     if (*haasOnOffParam == 1.0f)
     {
+        haasSmooth.setTargetValue( *haasWidthParam );
+        
         for (int i = 0; i < numSamples; i++)
         {
-            haasSmooth.setTargetValue( *haasWidthParam );
-            
-            float delayInSamples = haasSmooth.getNextValue() * ( 0.03f * getSampleRate() );
+            float delayInSamples = haasSmooth.getNextValue() * ( 0.03f * sampleRate );
             
             haasDelay.pushSample(0, leftChannel[i]);
             
