@@ -14,6 +14,7 @@
 #include "FoldbackDistortion.h"
 #include "BitCrusher.h"
 #include "FileReader.h"
+#include "FormantFilter.h"
 
 //==============================================================================
 /**
@@ -119,6 +120,10 @@ private:
     SmoothedValue<float> svFilterCutoffSmooth;
     SmoothedValue<float> svFilterResonanceSmooth;
     
+    std::atomic<float>* formantMorphParam;
+    std::atomic<float>* formantDryWetParam;
+    std::atomic<float>* formantOnOffParam;
+    
     // DSP Widgets & Processors
     dsp::Gain<float> inGain;
     dsp::Gain<float> outGain;
@@ -135,6 +140,7 @@ private:
     FoldbackDistortion foldback;
     BitCrusher         bitCrusher;
     DryWet             delayFXDryWet;
+    FormantFilter      formant;
     
     // Data File Reading
     FileReader fileReader;

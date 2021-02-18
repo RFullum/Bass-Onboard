@@ -84,6 +84,22 @@ parameters(*this, nullptr, "ParameterTree",
                                           NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
     std::make_unique<AudioParameterChoice>("bitcrushOnOff", "Bitcrush On/Off", StringArray( {"Off", "On"} ), 0 ),
     
+    // Formant Params
+    std::make_unique<AudioParameterFloat>("formantMorph", "Formant Morph",
+                                          NormalisableRange<float>(0.0f, 9.0f, 0.01f, 1.0f, false), 0, "" ),
+    std::make_unique<AudioParameterFloat>("formantDryWet", "Formant Dry/Wet",
+                                          NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
+    std::make_unique<AudioParameterChoice>("formantOnOff", "Formant On/Off", StringArray( {"Off", "On"} ), 0 ),
+    
+    // Delay FX
+    std::make_unique<AudioParameterFloat>("delayFXTime", "Delay FX Time",
+                                          NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
+    std::make_unique<AudioParameterFloat>("delayFXFdbck", "Delay FX Feedback",
+                                          NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
+    std::make_unique<AudioParameterFloat>("delayFXDryWet", "Delay FX Dry/Wet",
+                                          NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
+    std::make_unique<AudioParameterChoice>("delayFXOnOff", "Delay FX On/Off", StringArray( {"Off", "On"} ), 0 ),
+    
     // Filtering Params
     std::make_unique<AudioParameterFloat>("svFiltCutoff", "Filter Cutoff",
                                           NormalisableRange<float>(20.0f, 18000.0f, 0.01f, 0.25f, false), 18000.0f, "" ),
@@ -94,15 +110,6 @@ parameters(*this, nullptr, "ParameterTree",
     std::make_unique<AudioParameterChoice>("svFiltOnOff", "Filter On/Off", StringArray( {"Off", "On"} ), 0 ),
     
     // Spatial Params
-    // Delay FX
-    std::make_unique<AudioParameterFloat>("delayFXTime", "Delay FX Time",
-                                          NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
-    std::make_unique<AudioParameterFloat>("delayFXFdbck", "Delay FX Feedback",
-                                          NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
-    std::make_unique<AudioParameterFloat>("delayFXDryWet", "Delay FX Dry/Wet",
-                                          NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
-    std::make_unique<AudioParameterChoice>("delayFXOnOff", "Delay FX On/Off", StringArray( {"Off", "On"} ), 0 ),
-    
     // Haas Wide
     std::make_unique<AudioParameterFloat>("haasWidth", "Width Amount",
                                           NormalisableRange<float>(0.0f, 1.0f, 0.01f, 1.0f, false), 0.0f, "" ),
@@ -144,6 +151,10 @@ parameters(*this, nullptr, "ParameterTree",
     bitcrushOnOffParam  = parameters.getRawParameterValue ( "bitcrushOnOff"   );
     
     // Filter Params
+    formantMorphParam  = parameters.getRawParameterValue ( "formantMorph"  );
+    formantDryWetParam = parameters.getRawParameterValue ( "formantDryWet" );
+    formantOnOffParam  = parameters.getRawParameterValue ( "formantOnOff"  );
+    
     svFilterCutoffParam    = parameters.getRawParameterValue ( "svFiltCutoff" );
     svFilterResonanceParam = parameters.getRawParameterValue ( "svFiltRes"    );
     svFilterTypeParam      = parameters.getRawParameterValue ( "svFiltType"   );
@@ -271,6 +282,7 @@ void BassOnboardAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     waveShaper.setSampleRate ( sampleRate );
     foldback.setSampleRate   ( sampleRate );
     bitCrusher.prepare       ( sampleRate );
+    formant.prepare          ( spec );
     
     
     // Value smoothing
@@ -279,7 +291,7 @@ void BassOnboardAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     svFilterResonanceSmooth.reset          ( sampleRate, 0.01f );
     svFilterResonanceSmooth.setTargetValue ( 0.70f );
     
-    delayFXTimeSmooth.reset              ( sampleRate, 0.01f );
+    delayFXTimeSmooth.reset              ( sampleRate, 0.1f );
     delayFXTimeSmooth.setTargetValue     ( 0.0f );
     delayFXFeedbackSmooth.reset          ( sampleRate, 0.01f );
     delayFXFeedbackSmooth.setTargetValue ( 0.0f );
@@ -426,6 +438,13 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
             if (channel == 1)
                 rightChannel[i] = effectsBuffer.getSample ( channel, i );
         }
+    }
+    
+    
+    // Apply Formant Filter
+    if (*formantOnOffParam == 1.0f)
+    {
+        buffer.makeCopyOf( formant.process(buffer, *formantMorphParam, *formantDryWetParam) );
     }
     
     
