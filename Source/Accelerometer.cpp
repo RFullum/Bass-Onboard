@@ -25,21 +25,19 @@ void Accelerometer::setAccelValue(String& stringIn)
     float accelY = 0.0f;
     float accelZ = 0.0f;
     
-    accelStr = stringIn;
-    
     String accelXStr;
     String accelYStr;
     String accelZStr;
     
-    accelXStr   = accelStr.fromFirstOccurrenceOf ( "ax", false, true ).upToFirstOccurrenceOf ( "\n", false, true );
+    accelXStr   = stringIn.fromFirstOccurrenceOf ( "ax", false, true ).upToFirstOccurrenceOf ( "\n", false, true );
     accelX      = accelXStr.getDoubleValue();
     smoothValX += ( accelX - smoothValX ) * smoothingFactor;
     
-    accelYStr   = accelStr.fromFirstOccurrenceOf ( "ay", false, true ).upToFirstOccurrenceOf ( "\n", false, true );
+    accelYStr   = stringIn.fromFirstOccurrenceOf ( "ay", false, true ).upToFirstOccurrenceOf ( "\n", false, true );
     accelY      = accelYStr.getDoubleValue();
     smoothValY += ( accelY - smoothValY ) * smoothingFactor;
     
-    accelZStr   = accelStr.fromFirstOccurrenceOf ( "az", false, true ).upToFirstOccurrenceOf ( "\n", false, true );
+    accelZStr   = stringIn.fromFirstOccurrenceOf ( "az", false, true ).upToFirstOccurrenceOf ( "\n", false, true );
     accelZ      = accelZStr.getDoubleValue();
     smoothValZ += ( accelZ - smoothValZ ) * smoothingFactor;
 }

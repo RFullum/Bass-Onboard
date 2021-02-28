@@ -35,8 +35,6 @@ public:
     float getAccelZ();
 
 private:
-    String accelStr;
-    
     float smoothingFactor;
     float smoothValX;
     float smoothValY;
