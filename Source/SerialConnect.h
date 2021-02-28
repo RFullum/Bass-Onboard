@@ -12,6 +12,7 @@
 
 #include <JuceHeader.h>
 #include "juce_serialport/juce_serialport.h"
+#include "Accelerometer.h"
 
 //==============================================================================
 /*
@@ -27,6 +28,10 @@ public:
     
     /// Call from timerCallback() to set the parameter values using individual sensor parsing classes
     void setValues();
+    
+    float getAccelX();
+    float getAccelY();
+    float getAccelZ();
 
 private:
     // Member Variables
@@ -41,6 +46,12 @@ private:
     SerialPortOutputStream* macOutputStream;
     SerialPortInputStream*  macInputStream;
     
+    // Sensor Instances
+    Accelerometer accelerometer;
+    
+    float accelX;
+    float accelY;
+    float accelZ;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SerialConnect)
 };

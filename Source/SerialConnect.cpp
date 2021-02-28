@@ -60,5 +60,27 @@ void SerialConnect::setValues()
         // SENSOR DATA PARSING GOES HERE
         //
         
+        accelerometer.setAccelValue ( streamStr );
+        
+        accelX = accelerometer.getAccelX();
+        accelY = accelerometer.getAccelY();
+        accelZ = accelerometer.getAccelZ();
+        
     }
+}
+
+
+float SerialConnect::getAccelX()
+{
+    return accelX;
+}
+
+float SerialConnect::getAccelY()
+{
+    return accelY;
+}
+
+float SerialConnect::getAccelZ()
+{
+    return accelZ;
 }

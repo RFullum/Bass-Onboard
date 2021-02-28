@@ -467,6 +467,8 @@ void BassOnboardAudioProcessorEditor::resized()
 void BassOnboardAudioProcessorEditor::timerCallback()
 {
     serialConnect.setValues();
+    
+    
 }
 
 
