@@ -54,12 +54,16 @@ private:
     
     // Sensor Instances
     Accelerometer accelerometer;
+    Gyroscope     gyro;
     DistanceMeter distanceMeter;
     TouchScreen   touchScreen;
     
     float accelX;
     float accelY;
     float accelZ;
+    float gyroX;
+    float gyroY;
+    float gyroZ;
     float distance;
     float touchX;
     float touchY;

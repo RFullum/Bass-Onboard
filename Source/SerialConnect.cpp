@@ -50,6 +50,8 @@ void SerialConnect::setValues()
     // If the serial stream exists...
     if (macPort->exists())
     {
+        macOutputStream->writeBool(true);
+        
         // Until the stream is exhausted, read the stream and write it to streamStr
         while (!macInputStream->isExhausted())
         {
@@ -67,6 +69,13 @@ void SerialConnect::setValues()
         accelZ = accelerometer.getAccelZ();
         
         
+        gyro.setGyroValue ( streamStr );
+        
+        gyroX = gyro.getGyroX();
+        gyroY = gyro.getGyroY();
+        gyroZ = gyro.getGyroZ();
+        
+        
         distanceMeter.setDistanceValue( streamStr );
         
         distance = distanceMeter.getDistanceValue();
@@ -79,6 +88,8 @@ void SerialConnect::setValues()
         touchPress = touchScreen.getPressure();
         
     }
+    
+    macOutputStream->writeBool(false);
 }
 
 

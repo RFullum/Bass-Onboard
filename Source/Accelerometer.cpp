@@ -60,3 +60,57 @@ float Accelerometer::getAccelZ()
 {
     return smoothValZ;
 }
+
+
+
+
+//==============================================================================
+//==============================================================================
+//==============================================================================
+
+
+
+Gyroscope::Gyroscope() : smoothingFactor(0.4f), smoothGyroX(0.0f), smoothGyroY(0.0f), smoothGyroZ(0.0f)
+{}
+
+Gyroscope::~Gyroscope() {}
+
+
+void Gyroscope::setGyroValue(String &stringIn)
+{
+    float gyroX = 0.0f;
+    float gyroY = 0.0f;
+    float gyroZ = 0.0f;
+    
+    String gyroXStr;
+    String gyroYStr;
+    String gyroZStr;
+    
+    gyroXStr     = stringIn.fromFirstOccurrenceOf ( "gx", false, true ).upToFirstOccurrenceOf( "\n", false, true );
+    gyroX        = gyroXStr.getDoubleValue();
+    smoothGyroX += ( gyroX - smoothGyroX ) * smoothingFactor;
+    
+    gyroYStr     = stringIn.fromFirstOccurrenceOf( "gy", true, false ).upToFirstOccurrenceOf( "\n", false, true );
+    gyroY        = gyroYStr.getDoubleValue();
+    smoothGyroY += ( gyroY - smoothGyroY ) * smoothingFactor;
+    
+    gyroZStr     = stringIn.fromFirstOccurrenceOf( "gz", false, true ).upToFirstOccurrenceOf( "\n", false, true );
+    gyroZ        = gyroZStr.getDoubleValue();
+    smoothGyroZ += ( gyroZ - smoothGyroZ ) * smoothingFactor;
+    
+}
+
+float Gyroscope::getGyroX()
+{
+    return smoothGyroX;
+}
+
+float Gyroscope::getGyroY()
+{
+    return smoothGyroY;
+}
+
+float Gyroscope::getGyroZ()
+{
+    return smoothGyroZ;
+}

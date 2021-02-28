@@ -42,3 +42,28 @@ private:
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Accelerometer)
 };
+
+
+
+//==============================================================================
+//==============================================================================
+//==============================================================================
+
+class Gyroscope
+{
+public:
+    Gyroscope();
+    ~Gyroscope();
+    
+    void setGyroValue(String& stringIn);
+    
+    float getGyroX();
+    float getGyroY();
+    float getGyroZ();
+    
+private:
+    float smoothingFactor;
+    float smoothGyroX;
+    float smoothGyroY;
+    float smoothGyroZ;
+};
