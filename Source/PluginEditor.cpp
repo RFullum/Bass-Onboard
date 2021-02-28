@@ -468,6 +468,9 @@ void BassOnboardAudioProcessorEditor::timerCallback()
 {
     serialConnect.setValues();
     
+    delayTimeSlider.setValue     ( serialConnect.getAccelX() );
+    delayFeedbackSlider.setValue ( serialConnect.getAccelY() );
+    delayDryWetSlider.setValue   ( serialConnect.getAccelZ() );
     
 }
 

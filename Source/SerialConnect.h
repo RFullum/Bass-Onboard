@@ -14,6 +14,7 @@
 #include "juce_serialport/juce_serialport.h"
 #include "Accelerometer.h"
 #include "DistanceMeter.h"
+#include "TouchScreen.h"
 
 //==============================================================================
 /*
@@ -34,6 +35,9 @@ public:
     float getAccelY();
     float getAccelZ();
     float getDistance();
+    float getTouchX();
+    float getTouchY();
+    float getTouchPress();
 
 private:
     // Member Variables
@@ -51,11 +55,15 @@ private:
     // Sensor Instances
     Accelerometer accelerometer;
     DistanceMeter distanceMeter;
+    TouchScreen   touchScreen;
     
     float accelX;
     float accelY;
     float accelZ;
     float distance;
+    float touchX;
+    float touchY;
+    float touchPress;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SerialConnect)
 };

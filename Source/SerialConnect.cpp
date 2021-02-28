@@ -71,6 +71,13 @@ void SerialConnect::setValues()
         
         distance = distanceMeter.getDistanceValue();
         
+        
+        touchScreen.setTouchScreenCoords( streamStr );
+        
+        touchX     = touchScreen.getXCoord();
+        touchY     = touchScreen.getYCoord();
+        touchPress = touchScreen.getPressure();
+        
     }
 }
 
@@ -93,4 +100,19 @@ float SerialConnect::getAccelZ()
 float SerialConnect::getDistance()
 {
     return distance;
+}
+
+float SerialConnect::getTouchX()
+{
+    return touchX;
+}
+
+float SerialConnect::getTouchY()
+{
+    return touchY;
+}
+
+float SerialConnect::getTouchPress()
+{
+    return touchPress;
 }
