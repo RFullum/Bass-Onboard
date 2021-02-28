@@ -13,6 +13,7 @@
 #include <JuceHeader.h>
 #include "juce_serialport/juce_serialport.h"
 #include "Accelerometer.h"
+#include "DistanceMeter.h"
 
 //==============================================================================
 /*
@@ -32,6 +33,7 @@ public:
     float getAccelX();
     float getAccelY();
     float getAccelZ();
+    float getDistance();
 
 private:
     // Member Variables
@@ -48,10 +50,12 @@ private:
     
     // Sensor Instances
     Accelerometer accelerometer;
+    DistanceMeter distanceMeter;
     
     float accelX;
     float accelY;
     float accelZ;
+    float distance;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SerialConnect)
 };

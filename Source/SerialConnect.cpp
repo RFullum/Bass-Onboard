@@ -66,6 +66,11 @@ void SerialConnect::setValues()
         accelY = accelerometer.getAccelY();
         accelZ = accelerometer.getAccelZ();
         
+        
+        distanceMeter.setDistanceValue( streamStr );
+        
+        distance = distanceMeter.getDistanceValue();
+        
     }
 }
 
@@ -83,4 +88,9 @@ float SerialConnect::getAccelY()
 float SerialConnect::getAccelZ()
 {
     return accelZ;
+}
+
+float SerialConnect::getDistance()
+{
+    return distance;
 }
