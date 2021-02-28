@@ -10,11 +10,12 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "SerialConnect.h"
 
 //==============================================================================
 /**
 */
-class BassOnboardAudioProcessorEditor  : public juce::AudioProcessorEditor
+class BassOnboardAudioProcessorEditor  : public juce::AudioProcessorEditor, public Timer
 {
 public:
     BassOnboardAudioProcessorEditor (BassOnboardAudioProcessor&);
@@ -23,10 +24,11 @@ public:
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
+    void timerCallback() override;
 
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+    SerialConnect serialConnect;
+    
     BassOnboardAudioProcessor& audioProcessor;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BassOnboardAudioProcessorEditor)

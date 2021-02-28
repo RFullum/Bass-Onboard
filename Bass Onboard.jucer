@@ -29,8 +29,33 @@
       <FILE id="ldXMg8" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="fFTxtu" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
-      <FILE id="UnAKh5" name="FileReader.cpp" compile="1" resource="0" file="Source/FileReader.cpp"/>
-      <FILE id="dNYs7I" name="FileReader.h" compile="0" resource="0" file="Source/FileReader.h"/>
+      <FILE id="xGhEAD" name="SerialConnect.cpp" compile="1" resource="0"
+            file="Source/SerialConnect.cpp"/>
+      <FILE id="DdWVOJ" name="SerialConnect.h" compile="0" resource="0" file="Source/SerialConnect.h"/>
+      <GROUP id="{7B10390A-73EB-591C-6C71-1CB431908EB4}" name="juce_serialport">
+        <GROUP id="{28D83683-D6B8-DC0B-08B3-1F8D5B0D78C5}" name="com">
+          <GROUP id="{680D39F7-642F-313C-3AF7-199E9BAD206F}" name="artiphon">
+            <GROUP id="{18866FA4-9B4A-B1D1-00F4-A7EFC9B7D2B4}" name="juce_serial">
+              <FILE id="PhWd8d" name="UsbSerialHelper.java" compile="0" resource="1"
+                    file="Source/juce_serialport/com/artiphon/juce_serial/UsbSerialHelper.java"/>
+            </GROUP>
+          </GROUP>
+        </GROUP>
+        <GROUP id="{6EF3A8CC-4DDA-EE14-614E-4467A60CD87E}" name="submodules">
+          <GROUP id="{E055559D-287C-9E82-A27F-D650E967D951}" name="usb-serial-for-android"/>
+        </GROUP>
+        <FILE id="XaQObl" name="juce_serialport.h" compile="0" resource="0"
+              file="Source/juce_serialport/juce_serialport.h"/>
+        <FILE id="ig4hYf" name="juce_serialport_Android.cpp" compile="1" resource="0"
+              file="Source/juce_serialport/juce_serialport_Android.cpp"/>
+        <FILE id="DW9Rhj" name="juce_serialport_iOS.cpp" compile="1" resource="0"
+              file="Source/juce_serialport/juce_serialport_iOS.cpp"/>
+        <FILE id="tPzaWA" name="juce_serialport_OSX.cpp" compile="1" resource="0"
+              file="Source/juce_serialport/juce_serialport_OSX.cpp"/>
+        <FILE id="RMMbUn" name="juce_serialport_Windows.cpp" compile="1" resource="0"
+              file="Source/juce_serialport/juce_serialport_Windows.cpp"/>
+        <FILE id="t4qHE8" name="README.md" compile="0" resource="1" file="Source/juce_serialport/README.md"/>
+      </GROUP>
     </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>

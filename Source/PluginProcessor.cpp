@@ -354,26 +354,7 @@ void BassOnboardAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     for (int i = 0; i < numSamples; i++)
         leftChannel[i] = rightChannel[i];
     
-    //
-    //*** TEMP FILE HANDLING ****************************************************************************************
-    //
-    /*
-    if (fileReader.getDataLines().size() >= 3)
-    {
-        String a = fileReader.getDataLines()[0];
-        String b = fileReader.getDataLines()[1];
-        String c = fileReader.getDataLines()[2];
-        DBG(a);
-        DBG(b);
-        DBG(c);
-        DBG("");
-    }
-    */
-    
-    
-    
-    //float a = std::cin >>
-    
+        
     // Create the AudioBlock for DSP widgets
     dsp::AudioBlock<float> sampleBlock ( buffer );
     
@@ -565,8 +546,8 @@ bool BassOnboardAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* BassOnboardAudioProcessor::createEditor()
 {
-    //return new BassOnboardAudioProcessorEditor (*this);
-    return new GenericAudioProcessorEditor (*this);
+    return new BassOnboardAudioProcessorEditor (*this);
+    //return new GenericAudioProcessorEditor (*this);
 }
 
 //==============================================================================

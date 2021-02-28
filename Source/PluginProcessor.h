@@ -13,7 +13,6 @@
 #include "WaveShaper.h"
 #include "FoldbackDistortion.h"
 #include "BitCrusher.h"
-#include "FileReader.h"
 #include "FormantFilter.h"
 
 //==============================================================================
@@ -142,8 +141,6 @@ private:
     DryWet             delayFXDryWet;
     FormantFilter      formant;
     
-    // Data File Reading
-    FileReader fileReader;
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BassOnboardAudioProcessor)
