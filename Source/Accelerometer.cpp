@@ -13,15 +13,9 @@
 
 //==============================================================================
 Accelerometer::Accelerometer() : smoothingFactor(0.4f), smoothValX(0.0f), smoothValY(0.0f), smoothValZ(0.0f)
-{
-
-}
+{}
 
 Accelerometer::~Accelerometer() {}
-
-void Accelerometer::paint (juce::Graphics& g) {}
-
-void Accelerometer::resized() {}
 
 
 /// Called in timerCalback() to read accelerometer values from Arduino via Serial (USB)

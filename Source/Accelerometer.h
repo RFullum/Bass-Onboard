@@ -15,15 +15,12 @@
 //==============================================================================
 /*
 */
-class Accelerometer  : public juce::Component
+class Accelerometer
 {
 public:
     Accelerometer();
-    ~Accelerometer() override;
+    ~Accelerometer();
 
-    void paint (juce::Graphics&) override;
-    void resized() override;
-    
     
     /// Called in timerCalback() to read accelerometer values from Arduino via Serial (USB)
     void setAccelValue(String& stringIn);
