@@ -17,45 +17,62 @@ BassOnboardAudioProcessorEditor::BassOnboardAudioProcessorEditor (BassOnboardAud
     
     Timer::startTimerHz(60);
     
+    //
+    // Sliders Setup
+    //
     Slider::SliderStyle genericSlider = Slider::SliderStyle::LinearVertical;
     
-    // Slider Setup
+    // In Gain
     sliderSetup ( inGainSlider, genericSlider, true );
     
+    // Noise Gate
     sliderSetup ( ngThreshSlider,  genericSlider, true );
     sliderSetup ( ngRatioSlider,   genericSlider, true );
     sliderSetup ( ngAttackSlider,  genericSlider, true );
     sliderSetup ( ngReleaseSlider, genericSlider, true );
     
+    // Compressor
     sliderSetup ( compThreshSlider,  genericSlider, true );
     sliderSetup ( compRatioSlider,   genericSlider, true );
     sliderSetup ( compAttackSlider,  genericSlider, true );
     sliderSetup ( compReleaseSlider, genericSlider, true );
     
+    // Waveshaper
     sliderSetup ( wsAmtSlider,    genericSlider, true );
     sliderSetup ( wsDryWetSlider, genericSlider, true );
     
+    // Foldback
     sliderSetup ( fbAmtSlider,    genericSlider, true );
     sliderSetup ( fbDryWetSlider, genericSlider, true );
     
+    // Bitcrusher
     sliderSetup ( bcAmtSlider,    genericSlider, true );
     sliderSetup ( bcDryWetSlider, genericSlider, true );
     
+    // Formant
     sliderSetup ( formMorphSlider,  genericSlider, true );
     sliderSetup ( formDryWetSlider, genericSlider, true );
     
+    // Delay
     sliderSetup ( delayTimeSlider,     genericSlider, true );
     sliderSetup ( delayFeedbackSlider, genericSlider, true );
     sliderSetup ( delayDryWetSlider,   genericSlider, true );
     
+    // Filter
     sliderSetup ( filtCutoffSlider, genericSlider, true );
     sliderSetup ( filtResSlider,    genericSlider, true );
     
+    // Haas Width
     sliderSetup ( haasWidthSlider, genericSlider, true );
     
+    // Out Gain
     sliderSetup ( outGainSlider, genericSlider, true );
     
+    //
     // Combo Box Setup
+    //
+    
+    // On/Off boxes
     onOffBoxSetup ( ngOnOffBox    );
     onOffBoxSetup ( compOnOffBox  );
     onOffBoxSetup ( wsOnOffBox    );
@@ -66,6 +83,7 @@ BassOnboardAudioProcessorEditor::BassOnboardAudioProcessorEditor (BassOnboardAud
     onOffBoxSetup ( filtOnOffBox  );
     onOffBoxSetup ( haasOnOffBox  );
     
+    // Filter Type
     filtTypeBox.addItem              ( "LPF", 1 );
     filtTypeBox.addItem              ( "BPF", 2 );
     filtTypeBox.addItem              ( "HPF", 3 );
@@ -73,96 +91,127 @@ BassOnboardAudioProcessorEditor::BassOnboardAudioProcessorEditor (BassOnboardAud
     filtTypeBox.setSelectedItemIndex ( 0 );
     addAndMakeVisible                ( filtTypeBox );
     
+    // Filter Poles
     filtPolesBox.addItem              ( "-12dB", 1 );
     filtPolesBox.addItem              ( "-24dB", 2 );
     filtPolesBox.setJustificationType ( Justification::centred );
     filtPolesBox.setSelectedItemIndex ( 0 );
     addAndMakeVisible                 ( filtPolesBox );
     
+    //
     // Label Setup
+    //
+    
+    // In Gain
     sliderLabelSetup ( inLabel, "In"       );
     sliderLabelSetup ( inGainLabel, "Gain" );
     
+    // Noise Gate
     sliderLabelSetup ( ngLabel, "Noise Gate"     );
     sliderLabelSetup ( ngThreshLabel, "Thresh"   );
     sliderLabelSetup ( ngRatioLabel, "Ratio"     );
     sliderLabelSetup ( ngAttackLabel, "Attack"   );
     sliderLabelSetup ( ngReleaseLabel, "Release" );
     
+    // Compressor
     sliderLabelSetup ( compLabel, "Compressor"     );
     sliderLabelSetup ( compThreshLabel, "Thresh"   );
     sliderLabelSetup ( compRatioLabel, "Ratio"     );
     sliderLabelSetup ( compAttackLabel, "Attack"   );
     sliderLabelSetup ( compReleaseLabel, "Release" );
     
+    // Waveshaper
     sliderLabelSetup ( wsLabel, "Waveshaper"    );
     sliderLabelSetup ( wsAmtLabel, "Amount"     );
     sliderLabelSetup ( wsDryWetLabel, "Dry/Wet" );
     
+    // Foldback
     sliderLabelSetup ( fbLabel, "Foldback"      );
     sliderLabelSetup ( fbAmtLabel, "Amount"     );
     sliderLabelSetup ( fbDryWetLabel, "Dry/Wet" );
     
-    sliderLabelSetup ( bcLabel, "Bit Crush"     );
+    // Bitcursher
+    sliderLabelSetup ( bcLabel, "Bitcrusher"     );
     sliderLabelSetup ( bcAmtLabel, "Amount"     );
     sliderLabelSetup ( bcDryWetLabel, "Dry/Wet" );
     
+    // Formant
     sliderLabelSetup ( formLabel, "Formant"       );
     sliderLabelSetup ( formMorphLabel, "Morph"    );
     sliderLabelSetup ( formDryWetLabel, "Dry/Wet" );
     
+    // Delay
     sliderLabelSetup ( delayLabel, "Delay"            );
     sliderLabelSetup ( delayTimeLabel, "Time"         );
     sliderLabelSetup ( delayFeedbackLabel, "Feedback" );
     sliderLabelSetup ( delayDryWetLabel, "Dry/Wet"    );
     
+    // Filter
     sliderLabelSetup ( filtLabel, "Filter"       );
     sliderLabelSetup ( filtCutoffLabel, "Cutoff" );
     sliderLabelSetup ( filtResLabel, "Resonance" );
     
+    // Haas Width
     sliderLabelSetup ( haasLabel, "Width"       );
     sliderLabelSetup ( haasWidthLabel, "Amount" );
     
+    // Out Gain
     sliderLabelSetup ( outLabel, "Out"      );
     sliderLabelSetup ( outGainLabel, "Gain" );
     
+    //
     // Slider Attachments
+    //
+    
+    // In Gain
     inGainAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> ( audioProcessor.parameters, "inGain", inGainSlider );
     
+    // Noise Gate
     ngThreshAttachment  = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters, "ngThresh",  ngThreshSlider  );
     ngRatioAttachment   = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters, "ngRatio",   ngRatioSlider   );
     ngAttackAttachment  = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters, "ngAttack",  ngAttackSlider  );
     ngReleaseAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters, "ngRelease", ngReleaseSlider );
     
+    // Compressor
     compThreshAttachment  = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters,"compThresh",  compThreshSlider  );
     compRatioAttachment   = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters,"compRatio",   compRatioSlider   );
     compAttackAttachment  = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters,"compAttack",  compAttackSlider  );
     compReleaseAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters,"compRelease", compReleaseSlider );
     
+    // Waveshaper
     wsAmtAttachment    = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters, "wsAmt",    wsAmtSlider    );
     wsDryWetAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters, "wsDryWet", wsDryWetSlider );
     
+    // Foldback
     fbAmtAttachment    = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters, "foldbackAmt",    fbAmtSlider    );
     fbDryWetAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters, "foldbackDryWet", fbDryWetSlider );
     
+    // Bitcrusher
     bcAmtAttachment    = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters, "bitcrushAmt",    bcAmtSlider    );
     bcDryWetAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters, "bitcrushDryWet", bcDryWetSlider );
     
+    // Formant
     formMorphAttachment  = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters, "formantMorph",  formMorphSlider  );
     formDryWetAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters, "formantDryWet", formDryWetSlider );
     
+    // Delay
     delayTimeAttachment     = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters, "delayFXTime",   delayTimeSlider     );
     delayFeedbackAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters, "delayFXFdbck",  delayFeedbackSlider );
     delayDryWetAttachment   = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters, "delayFXDryWet", delayDryWetSlider   );
     
+    // Filter
     filtCutoffAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters, "svFiltCutoff", filtCutoffSlider );
     filtResAttachment    = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters, "svFiltRes",    filtResSlider    );
     
+    // Haas Width
     haasWidthAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters, "haasWidth", haasWidthSlider );
     
+    // Out Gain
     outGainAttachment = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (audioProcessor.parameters, "outGain", outGainSlider );
     
+    //
     // ComboBox Attachments
+    //
     ngOnOffAttachment    = std::make_unique<AudioProcessorValueTreeState::ComboBoxAttachment> ( audioProcessor.parameters, "ngOnOff",       ngOnOffBox    );
     compOnOffAttachment  = std::make_unique<AudioProcessorValueTreeState::ComboBoxAttachment> ( audioProcessor.parameters, "compOnOff",     compOnOffBox  );
     wsOnOffAttachment    = std::make_unique<AudioProcessorValueTreeState::ComboBoxAttachment> ( audioProcessor.parameters, "wsOnOff",       wsOnOffBox    );
@@ -186,6 +235,7 @@ void BassOnboardAudioProcessorEditor::paint (juce::Graphics& g) {}
 
 void BassOnboardAudioProcessorEditor::resized()
 {
+    // Padding around each effect section to visually separate
     float areaPadding = 10.0f;
     
     // Total area split to top & bottom halves
@@ -194,7 +244,7 @@ void BassOnboardAudioProcessorEditor::resized()
     Rectangle<int> bottomHalf = totalArea;
     
     // Top & Bottom Halves split into effect sections, width based on number of sliders
-    float topSpacing = topHalf.getWidth() / 15.0f;
+    float topSpacing    = topHalf.getWidth() / 15.0f;
     float bottomSpacing = bottomHalf.getWidth() / 11.0f;
     
     Rectangle<int> inArea   = topHalf.removeFromLeft ( topSpacing ).reduced        ( areaPadding );
@@ -212,8 +262,9 @@ void BassOnboardAudioProcessorEditor::resized()
     
     float labelHeight = 50.0f;
     float boxHeight   = 50.0f;
-    float boxReduceX  = 75.0f;
+    float boxReduceX  = 75.0f;  // Only works on wider effects section
     float boxReduceY  = 12.0f;
+    
     
     // Top Half Areas
     
@@ -222,9 +273,9 @@ void BassOnboardAudioProcessorEditor::resized()
     Rectangle<int> inGainLabelArea = inArea.removeFromTop    ( labelHeight );
     Rectangle<int> inBoxSpacer     = inArea.removeFromBottom ( boxHeight   );
     
-    inLabel.setBounds     ( inLabelArea );
-    inGainLabel.setBounds ( inGainLabelArea );
-    inGainSlider.setBounds( inArea );
+    inLabel.setBounds      ( inLabelArea );
+    inGainLabel.setBounds  ( inGainLabelArea );
+    inGainSlider.setBounds ( inArea );
     
     
     // Noise Gate
@@ -317,8 +368,8 @@ void BassOnboardAudioProcessorEditor::resized()
     Rectangle<int> fbParamLabelArea = fbArea.removeFromTop    ( labelHeight );
     Rectangle<int> fbBoxArea        = fbArea.removeFromBottom ( boxHeight   );
     
-    fbLabel.setBounds( fbLabelArea );
-    fbOnOffBox.setBounds( fbBoxArea.reduced(boxReduceY, boxReduceY) );
+    fbLabel.setBounds    ( fbLabelArea );
+    fbOnOffBox.setBounds ( fbBoxArea.reduced(boxReduceY, boxReduceY) );
     
     float fbWidth = fbArea.getWidth() * 0.5f;
     
@@ -450,9 +501,9 @@ void BassOnboardAudioProcessorEditor::resized()
     
     
     // Out Gain
-    Rectangle<int> outLabelArea = outArea.removeFromTop( labelHeight );
-    Rectangle<int> outParamLabelArea = outArea.removeFromTop( labelHeight );
-    Rectangle<int> outBoxSpacer = outArea.removeFromBottom( boxHeight );
+    Rectangle<int> outLabelArea      = outArea.removeFromTop    ( labelHeight );
+    Rectangle<int> outParamLabelArea = outArea.removeFromTop    ( labelHeight );
+    Rectangle<int> outBoxSpacer      = outArea.removeFromBottom ( boxHeight   );
     
     outLabel.setBounds      ( outLabelArea      );
     outGainLabel.setBounds  ( outParamLabelArea );
@@ -466,8 +517,10 @@ void BassOnboardAudioProcessorEditor::resized()
 
 void BassOnboardAudioProcessorEditor::timerCallback()
 {
+    // Calls Arduinos, gets the input stream, and sets the values in the Sensors' classess
     serialConnect.setValues();
     
+    // Gets values from Acceleromter axes and updates the Slider values with them
     delayTimeSlider.setValue     ( serialConnect.getAccelX() );
     delayFeedbackSlider.setValue ( serialConnect.getAccelY() );
     delayDryWetSlider.setValue   ( serialConnect.getAccelZ() );
